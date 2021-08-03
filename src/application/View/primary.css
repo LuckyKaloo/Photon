@@ -1,0 +1,11 @@
+.toggle-button {
+    -fx-background-color: rgb(220, 220, 220);
+}
+
+.toggle-button:hover {
+    -fx-background-color: rgb(160, 160, 160);
+}
+
+.toggle-button:selected {
+    -fx-background-color: rgb(120, 120, 120);
+}
