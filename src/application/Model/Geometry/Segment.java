@@ -1,9 +1,9 @@
 package application.Model.Geometry;
 
-public class Line extends Ray {
-    private final Point end;
+public class Segment extends Ray {
+    protected final Point end;
 
-    public Line(Point start, Point end) {
+    public Segment(Point start, Point end) {
         if (start.getX() == end.getX() && start.getY() == end.getY()) {
             throw new IllegalArgumentException("Points are the same!");
         } else {

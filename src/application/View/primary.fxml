@@ -8,6 +8,7 @@
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane fx:id="borderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Controller.PrimaryController">
@@ -37,7 +38,7 @@
          <children>
             <ToggleButton fx:id="source" mnemonicParsing="false" prefHeight="56.0" prefWidth="56.0" />
             <ToggleButton fx:id="absorber" mnemonicParsing="false" prefHeight="56.0" prefWidth="56.0" />
-            <ToggleButton fx:id="refractor" mnemonicParsing="false" prefHeight="56.0" prefWidth="56.0" />
+            <ToggleButton fx:id="shape" mnemonicParsing="false" prefHeight="56.0" prefWidth="56.0" />
             <ToggleButton fx:id="mirror" mnemonicParsing="false" prefHeight="56.0" prefWidth="56.0" />
          </children>
          <padding>
@@ -45,7 +46,11 @@
          </padding></VBox>
    </left>
    <center>
-      <Canvas fx:id="canvas" height="375.0" width="400.0" BorderPane.alignment="TOP_LEFT" />
+      <Pane fx:id="pane" BorderPane.alignment="TOP_LEFT">
+         <children>
+            <Canvas fx:id="canvas" height="375.0" width="400.0" />
+         </children>
+      </Pane>
    </center>
    <right>
       <AnchorPane fx:id="information" prefHeight="375.0" prefWidth="103.0" BorderPane.alignment="CENTER" />

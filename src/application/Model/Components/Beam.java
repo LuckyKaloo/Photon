@@ -1,3 +1,4 @@
 package application.Model.Components;
 
-public interface Component {}
+public class Beam {
+}

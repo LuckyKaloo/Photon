@@ -1,11 +1,11 @@
 package application.Model.Geometry;
 
 public class Ray {
-    double angle;
-    Point start;
+    protected double angle;
+    protected Point start;
 
-    double gradient;
-    double yIntercept;
+    protected double gradient;
+    protected double yIntercept;
 
     Ray() {}
 
@@ -29,9 +29,6 @@ public class Ray {
     }
 
     public Point intersection(Ray ray) {
-        System.out.println("gradient: " + gradient + ", y intercept: " + yIntercept);
-        System.out.println("gradient: " + ray.gradient + ", y intercept: " + ray.yIntercept);
-
         // calculating intersection of the 2 rays as if they were lines extending to infinity
         if (angle == ray.angle || angle == ray.angle + 180) {
             return null;
