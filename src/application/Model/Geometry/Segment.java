@@ -4,16 +4,16 @@ public class Segment extends Ray {
     protected final Point end;
 
     public Segment(Point start, Point end) {
-        if (start.getX() == end.getX() && start.getY() == end.getY()) {
+        if (start.X() == end.X() && start.Y() == end.Y()) {
             throw new IllegalArgumentException("Points are the same!");
         } else {
-            this.gradient = (end.getY() - start.getY()) / (end.getX() - start.getX());
+            this.gradient = (end.Y() - start.Y()) / (end.X() - start.X());
             this.angle = Math.toDegrees(Math.atan(this.gradient)) % 180;
             if (this.angle < 0) {
                 this.angle += 180;
             }
         }
-        this.yIntercept = start.getY() - this.gradient * start.getX();
+        this.yIntercept = start.Y() - this.gradient * start.X();
 
         this.start = start;
         this.end = end;
@@ -25,15 +25,15 @@ public class Segment extends Ray {
 
     @Override
     protected boolean containsIntersection(Point point) {
-        // check if point is outside bounds of line on x-axis
-        if (point.getX() < start.getX() && point.getX() < end.getX() ||
-                point.getX() > start.getX() && point.getX() > end.getX()) {
+        // check if point is outside bounds of line on X-axis
+        if (point.X() < start.X() && point.X() < end.X() ||
+                point.X() > start.X() && point.X() > end.X()) {
 
             return false;
         }
 
-        // check if point is outside bounds of line on y-axis
-        return (!(point.getY() < start.getY()) || !(point.getY() < end.getY())) &&
-                (!(point.getY() > start.getY()) || !(point.getY() > end.getY()));
+        // check if point is outside bounds of line on Y-axis
+        return (!(point.Y() < start.Y()) || !(point.Y() < end.Y())) &&
+                (!(point.Y() > start.Y()) || !(point.Y() > end.Y()));
     }
 }

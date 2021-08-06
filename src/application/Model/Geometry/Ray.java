@@ -17,7 +17,14 @@ public class Ray {
         this.start = start;
 
         gradient = Math.tan(Math.toRadians(angle));
-        yIntercept = start.getY() - gradient * start.getX();
+        yIntercept = start.Y() - gradient * start.X();
+    }
+
+    public Ray(Ray ray) {
+        this.angle = ray.angle;
+        this.start = ray.start;
+        this.gradient = ray.gradient;
+        this.yIntercept = ray.yIntercept;
     }
 
     public double getAngle() {
@@ -36,10 +43,10 @@ public class Ray {
 
         double x, y;
         if (angle == 90 || angle == 270) {
-            x = start.getX();
+            x = start.X();
             y = ray.gradient * x + ray.yIntercept;
         } else if (ray.angle == 90 || ray.angle == 270) {
-            x = ray.start.getX();
+            x = ray.start.X();
             y = gradient * x + yIntercept;
         } else {
             x = (ray.yIntercept - yIntercept) / (gradient - ray.gradient);
@@ -56,16 +63,16 @@ public class Ray {
     }
 
     protected boolean containsIntersection(Point point) {
-        if ((angle < 90 || angle > 270) && point.getX() < start.getX()) {  // ray only goes to the right
+        if ((angle < 90 || angle > 270) && point.X() < start.X()) {  // ray only goes to the right
             return false;
-        } else if ((angle > 90 && angle < 270) && point.getX() > start.getX()) {  // ray only goes to the left
+        } else if ((angle > 90 && angle < 270) && point.X() > start.X()) {  // ray only goes to the left
             return false;
         }
 
         // ray only goes down
-        if (angle < 180 && point.getY() < start.getY()) {  // ray only goes up
+        if (angle < 180 && point.Y() < start.Y()) {  // ray only goes up
             return false;
-        } else return !(angle > 180) || !(point.getY() > start.getY());
+        } else return !(angle > 180) || !(point.Y() > start.Y());
     }
 
 

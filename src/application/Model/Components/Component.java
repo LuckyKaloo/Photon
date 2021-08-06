@@ -1,3 +1,10 @@
 package application.Model.Components;
 
-public interface Component {}
+import application.Model.Geometry.Point;
+import application.Model.Light.LightRay;
+
+public interface Component {
+    LightRay interact(LightRay lightRay);
+
+    Point intersection(LightRay lightRay);
+}

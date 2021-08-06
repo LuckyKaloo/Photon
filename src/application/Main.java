@@ -2,7 +2,7 @@ package application;
 
 import application.Model.Components.Edge;
 import application.Model.Geometry.Point;
-import application.Model.Geometry.Ray;
+import application.Model.Light.LightRay;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -28,31 +28,31 @@ public class Main extends Application {
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
 
 
-        Ray beam = new Ray(116.4, new Point(250, 300));
+        LightRay beam = new LightRay(116.4, new Point(250, 300), 1.5);
         Edge edge = new Edge(new Point(100, 200), new Point(300, 700), Edge.REFRACTOR);
         Point intersection = beam.intersection(edge);
         System.out.println(intersection);
 
-        Ray outgoing = edge.interact(beam, 1.5, 1);
+        LightRay outgoing = edge.interact(beam, 1);
         System.out.println(outgoing);
 
         graphicsContext.beginPath();
-        graphicsContext.moveTo(edge.getStart().getX(), edge.getStart().getY());
+        graphicsContext.moveTo(edge.getStart().X(), edge.getStart().Y());
         graphicsContext.setStroke(Color.rgb(220, 150, 150));
-        graphicsContext.lineTo(edge.getEnd().getX(), edge.getEnd().getY());
+        graphicsContext.lineTo(edge.getEnd().X(), edge.getEnd().Y());
         graphicsContext.stroke();
         graphicsContext.closePath();
 
         graphicsContext.beginPath();
-        graphicsContext.moveTo(beam.getStart().getX(), beam.getStart().getY());
-        graphicsContext.lineTo(intersection.getX(), intersection.getY());
+        graphicsContext.moveTo(beam.getStart().X(), beam.getStart().Y());
+        graphicsContext.lineTo(intersection.X(), intersection.Y());
         graphicsContext.stroke();
         graphicsContext.closePath();
 
         graphicsContext.beginPath();
-        graphicsContext.moveTo(intersection.getX(), intersection.getY());
-        graphicsContext.lineTo(intersection.getX() + 800 * Math.cos(Math.toRadians(outgoing.getAngle())),
-                intersection.getY() + 800 * Math.sin(Math.toRadians(outgoing.getAngle())));
+        graphicsContext.moveTo(intersection.X(), intersection.Y());
+        graphicsContext.lineTo(intersection.X() + 800 * Math.cos(Math.toRadians(outgoing.getAngle())),
+                intersection.Y() + 800 * Math.sin(Math.toRadians(outgoing.getAngle())));
         graphicsContext.stroke();
         graphicsContext.closePath();
     }

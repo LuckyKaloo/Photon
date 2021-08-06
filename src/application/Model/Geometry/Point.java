@@ -1,24 +1,13 @@
 package application.Model.Geometry;
 
-public class Point {
-    private final double x;
-    private final double y;
-
-    public Point(double x, double y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    public double getX() {
-        return x;
-    }
-
-    public double getY() {
-        return y;
+public record Point(double X, double Y) {
+    public static double distance(Point point1, Point point2) {
+        return Math.sqrt((point1.X - point2.X) * (point1.X - point2.X) +
+                (point1.Y - point2.Y) * (point1.Y - point2.Y));
     }
 
     @Override
     public String toString() {
-        return String.format("(%.1f, %.1f)", x, y);
+        return String.format("(%.1f, %.1f)", X, Y);
     }
 }

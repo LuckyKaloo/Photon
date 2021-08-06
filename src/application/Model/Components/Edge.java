@@ -1,8 +1,8 @@
 package application.Model.Components;
 
 import application.Model.Geometry.Point;
-import application.Model.Geometry.Ray;
 import application.Model.Geometry.Segment;
+import application.Model.Light.LightRay;
 
 public class Edge extends Segment {
     public final static int REFLECTOR = 0;
@@ -18,49 +18,46 @@ public class Edge extends Segment {
         this.type = type;
     }
 
-    public Ray interact(Ray ray) {
+    public LightRay interact(LightRay lightRay) {
         if (type == ABSORBER) {
             return null;
         } else if (type == REFLECTOR) {
-            return interact(ray, 0, 0);
+            return interact(lightRay, 0);
         }
 
         throw new IllegalCallerException("Cannot call method with only ray for refractor!");
     }
 
-    public Ray interact(Ray ray, double startIndex, double endIndex) {
+    public LightRay interact(LightRay lightRay, double endIndex) {
         if (type == ABSORBER) {
             return null;
         }
 
-        Point intersection = intersection(ray);
+        Point intersection = intersection(lightRay);
         if (intersection == null) {
             return null;
         }
 
-        double initialAngle = ray.getAngle() - angle;  // angle of the ray relative to the edge
+        double initialAngle = lightRay.getAngle() - angle;  // angle of the ray relative to the edge
         double normalisedAngle = Math.abs(initialAngle % 180);
         double angleIncidence = Math.abs(90 - normalisedAngle);
 
-        if (type == REFLECTOR || endIndex == 0 || startIndex == 0) {
-            double finalAngle = (reflect(initialAngle, normalisedAngle, angleIncidence) + angle) % 360;
-            return new Ray(finalAngle, intersection);
+        if (type == REFLECTOR || endIndex == 0 || lightRay.getRefractiveIndex() == 0) {
+            return reflect(initialAngle, normalisedAngle, angleIncidence,
+                    lightRay.getRefractiveIndex(), intersection);
         } else if (type == REFRACTOR) {
-            double finalAngle =
-                    (refract(initialAngle, normalisedAngle, angleIncidence, startIndex, endIndex) + angle) % 360;
-
-            return new Ray(finalAngle, intersection);
+            return refract(initialAngle, normalisedAngle, angleIncidence,
+                    lightRay.getRefractiveIndex(), endIndex, intersection);
         }
 
         throw new IllegalStateException("Edge type is not valid!");
     }
 
-    // methods to return the relative angle of the outgoing ray to the edge
-    private double refract(double initialAngle, double normalisedAngle, double angleIncidence,
-                           double startIndex, double endIndex) {
+    // helper methods to return the relative angle of the outgoing ray to the edge
+    private LightRay refract(double initialAngle, double normalisedAngle, double angleIncidence,
+                           double startIndex, double endIndex, Point intersection) {
 
         double angleRefraction;
-        double relativeFinalAngle;
         if (endIndex == 0) {  // always reflection
             angleRefraction = 180;  // more than 90 -> goes into reflection case
         } else {  // n1 * sin(angle1) = n2 * sin(angle2)
@@ -68,38 +65,48 @@ public class Edge extends Segment {
                     Math.sin(Math.toRadians(angleIncidence)) * startIndex / endIndex));
         }
 
+        double relativeFinalAngle;
         if (angleRefraction <= 90) {  // normal refraction
             if (initialAngle > 180) {
                 if (normalisedAngle > 90) {
-                    return 270 + angleRefraction;
+                    relativeFinalAngle = 270 + angleRefraction;
                 } else {
-                    return 270 - angleRefraction;
+                    relativeFinalAngle = 270 - angleRefraction;
                 }
             } else {
                 if (normalisedAngle > 90) {
-                    return 90 + angleRefraction;
+                    relativeFinalAngle = 90 + angleRefraction;
                 } else {
-                    return 90 - angleRefraction;
+                    relativeFinalAngle = 90 - angleRefraction;
                 }
             }
-        } else {
-            return reflect(initialAngle, normalisedAngle, angleIncidence);
+
+            double finalAngle = (relativeFinalAngle + angle) % 360;
+            return new LightRay(finalAngle, intersection, endIndex);
+        } else {  // total internal reflection
+            return reflect(initialAngle, normalisedAngle, angleIncidence, startIndex, intersection);
         }
     }
 
-    private double reflect(double relativeInitialAngle, double normalisedAngle, double angleIncidence) {
+    private LightRay reflect(double relativeInitialAngle, double normalisedAngle, double angleIncidence,
+                             double startIndex, Point intersection) {
+
+        double relativeFinalAngle;
         if (relativeInitialAngle > 180) {
             if (normalisedAngle > 90) {
-                return 90 - angleIncidence;
+                relativeFinalAngle = 90 - angleIncidence;
             } else {
-                return 90 + angleIncidence;
+                relativeFinalAngle = 90 + angleIncidence;
             }
         } else {
             if (normalisedAngle > 90) {
-                return 270 - angleIncidence;
+                relativeFinalAngle = 270 - angleIncidence;
             } else {
-                return 270 + angleIncidence;
+                relativeFinalAngle = 270 + angleIncidence;
             }
         }
+        double finalAngle = (relativeFinalAngle + angle) % 360;
+
+        return new LightRay(finalAngle, intersection, startIndex);
     }
 }

@@ -9,4 +9,5 @@ module Project {
     opens application.Model.Geometry;
     opens application.View;
     opens application.Controller;
+    opens application.Model.Light;
 }
