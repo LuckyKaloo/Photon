@@ -38,7 +38,7 @@
          <children>
             <ToggleButton fx:id="source" mnemonicParsing="false" prefHeight="56.0" prefWidth="56.0" />
             <ToggleButton fx:id="absorber" mnemonicParsing="false" prefHeight="56.0" prefWidth="56.0" />
-            <ToggleButton fx:id="refractor" mnemonicParsing="false" prefHeight="56.0" prefWidth="56.0" />
+            <ToggleButton fx:id="shape" mnemonicParsing="false" prefHeight="56.0" prefWidth="56.0" />
             <ToggleButton fx:id="mirror" mnemonicParsing="false" prefHeight="56.0" prefWidth="56.0" />
          </children>
          <padding>

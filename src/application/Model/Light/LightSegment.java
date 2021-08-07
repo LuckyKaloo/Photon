@@ -11,6 +11,10 @@ public class LightSegment extends Segment implements LightComponent {
         this.refractiveIndex = refractiveIndex;
     }
 
+    public LightSegment(LightRay lightRay, Point end) {
+        this(lightRay.getStart(), end, lightRay.getRefractiveIndex());
+    }
+
     @Override
     public double getRefractiveIndex() {
         return refractiveIndex;

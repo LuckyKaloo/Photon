@@ -9,13 +9,20 @@ public class Edge extends Segment {
     public final static int REFRACTOR = 1;
     public final static int ABSORBER = 2;
 
-    private final int type;
+    private int type;
+
+
     public Edge(Point start, Point end, int type) {
         super(start, end);
-        if (type < 0 || type > 2) {
+        setType(type);
+    }
+
+    public void setType(int type) {
+        if (type == REFLECTOR || type == REFRACTOR || type == ABSORBER) {
+            this.type = type;
+        } else {
             throw new IllegalArgumentException("Invalid type for edge!");
         }
-        this.type = type;
     }
 
     public LightRay interact(LightRay lightRay) {
@@ -39,6 +46,10 @@ public class Edge extends Segment {
         }
 
         double initialAngle = lightRay.getAngle() - angle;  // angle of the ray relative to the edge
+        if (initialAngle < 0) {
+            initialAngle += 360;
+        }
+
         double normalisedAngle = Math.abs(initialAngle % 180);
         double angleIncidence = Math.abs(90 - normalisedAngle);
 
@@ -54,7 +65,7 @@ public class Edge extends Segment {
     }
 
     // helper methods to return the relative angle of the outgoing ray to the edge
-    private LightRay refract(double initialAngle, double normalisedAngle, double angleIncidence,
+    private LightRay refract(double relativeInitialAngle, double normalisedAngle, double angleIncidence,
                            double startIndex, double endIndex, Point intersection) {
 
         double angleRefraction;
@@ -67,7 +78,7 @@ public class Edge extends Segment {
 
         double relativeFinalAngle;
         if (angleRefraction <= 90) {  // normal refraction
-            if (initialAngle > 180) {
+            if (relativeInitialAngle > 180) {
                 if (normalisedAngle > 90) {
                     relativeFinalAngle = 270 + angleRefraction;
                 } else {
@@ -84,7 +95,7 @@ public class Edge extends Segment {
             double finalAngle = (relativeFinalAngle + angle) % 360;
             return new LightRay(finalAngle, intersection, endIndex);
         } else {  // total internal reflection
-            return reflect(initialAngle, normalisedAngle, angleIncidence, startIndex, intersection);
+            return reflect(relativeInitialAngle, normalisedAngle, angleIncidence, startIndex, intersection);
         }
     }
 

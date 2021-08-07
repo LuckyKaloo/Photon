@@ -1,5 +1,11 @@
 package application.Model.Geometry;
 
+import application.Model.Components.Component;
+import application.Model.Components.Edge;
+import application.Model.Light.LightRay;
+
+import java.util.ArrayList;
+
 public class Ray {
     protected double angle;
     protected Point start;
