@@ -68,6 +68,8 @@ public class PrimaryController {
     private final static Color absorberColor = Color.rgb(93, 231, 48);
     private final static Color mirrorColor = Color.rgb(192, 215, 231);
 
+    private final static Color shapeDrawingColor = Color.rgb(239, 84, 84);
+
 
     public void start() {
         graphicsContext = canvas.getGraphicsContext2D();
@@ -126,30 +128,24 @@ public class PrimaryController {
             updateCanvas(e);
         });
 
+        canvas.setOnMouseMoved(this::updateCanvas);
 
-        // testing
-        ArrayList<Point> points1 = new ArrayList<>();
-        points1.add(new Point(300, 200));
-        points1.add(new Point(200, 300));
-        points1.add(new Point(400, 250));
-        Shape shape1 = new Shape(1.5, points1);
-
-        ArrayList<Point> points2 = new ArrayList<>();
-        points2.add(new Point(380, 600));
-        points2.add(new Point(340, 350));
-        points2.add(new Point(570, 480));
-        points2.add(new Point(420, 550));
-        Shape shape2 = new Shape(1.6, points2);
-
-        components.add(shape1);
-        components.add(shape2);
-
-        Source source = new Source(new Point(240, 400));
-        source.setAngle(-160);
-        components.add(source);
-
-        Beam beam = source.getBeam();
-        beam.generateBeam(components);
+        borderPane.setOnKeyPressed(e -> {
+            switch (e.getCode()) {
+                case P -> {
+                    System.out.println("P");
+                    for (Component component: components) {
+                        if (component instanceof Source) {
+                            System.out.println(((Source) component).getBeam());
+                        }
+                    }
+                }
+                case Z -> {
+                    components.remove(components.size()-1);
+                    updateCanvas();
+                }
+            }
+        });
 
         updateCanvas();
     }
@@ -181,7 +177,10 @@ public class PrimaryController {
 
                 // drawing the beam
                 graphicsContext.setStroke(beamColor);
+//                Random random = new Random();
                 for (LightComponent lightComponent: source.getBeam().getLightComponents()) {
+//                    graphicsContext.setStroke(Color.rgb(random.nextInt(200), random.nextInt(200), random.nextInt(200)));
+
                     if (lightComponent instanceof LightSegment lightSegment) {
                         drawSegment(lightSegment);
                     } else if (lightComponent instanceof LightRay lightRay) {
@@ -202,17 +201,34 @@ public class PrimaryController {
     private void updateCanvas(MouseEvent e) {
         updateCanvas();
 
+
+        Point newPoint = new Point(e.getX(), e.getY());
         if (absorber.isSelected() && startPoint != null) {
             graphicsContext.setStroke(absorberColor);
-            drawSegment(new Segment(startPoint, new Point(e.getX(), e.getY())));
+
+            if (!startPoint.equals(newPoint)) {
+                drawSegment(new Segment(startPoint, newPoint));
+            }
         } else if (mirror.isSelected() && startPoint != null){
             graphicsContext.setStroke(mirrorColor);
-            drawSegment(new Segment(startPoint, new Point(e.getX(), e.getY())));
+
+            if (!startPoint.equals(newPoint)) {
+                drawSegment(new Segment(startPoint, newPoint));
+            }
         } else if (shape.isSelected() && vertices.size() != 0) {
-            graphicsContext.setStroke(shapeColor);
+            graphicsContext.setStroke(shapeDrawingColor);
 
             ArrayList<Point> points = new ArrayList<>(vertices);
-            ArrayList<Segment> segments = Segment.pointsToSegments(points);
+            boolean contains = false;
+            for (Point point: points) {
+                if (point.equals(newPoint)) {
+                    contains = true;
+                }
+            }
+            if (!contains) {
+                points.add(newPoint);
+            }
+            ArrayList<Segment> segments = Segment.pointsToSegments(points, false);
             for (Segment segment: segments) {
                 drawSegment(segment);
             }

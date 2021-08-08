@@ -46,7 +46,7 @@ public class Source implements Component {
     }
 
     @Override
-    public LightRay interact(LightRay lightRay, ArrayList<Component> components) {
+    public LightRay interact(LightRay lightRay) {
         return null;
     }
 

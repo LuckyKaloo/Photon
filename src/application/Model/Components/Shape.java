@@ -24,7 +24,7 @@ public class Shape implements Component {
                 points.add((Point) object);
             }
 
-            ArrayList<Segment> segments = Segment.pointsToSegments(points);
+            ArrayList<Segment> segments = Segment.pointsToSegments(points, true);
             this.edges = new ArrayList<>();
             for (Segment segment: segments) {
                 this.edges.add(new Edge(segment, Edge.REFRACTOR));
@@ -65,20 +65,19 @@ public class Shape implements Component {
     }
 
     @Override
-    public LightRay interact(LightRay lightRay, ArrayList<Component> components) {
+    public LightRay interact(LightRay lightRay) {
         Edge intersectionEdge = intersectionEdge(lightRay);
-        if (this == lightRay.nextComponent(components)) { // ray is exiting the shape
-            // check the next component that it will intersect
-            LightRay testRay = new LightRay(lightRay.getAngle(), intersection(lightRay), 1);
-            Component testComponent = testRay.nextComponent(components);
-
-            if (testComponent instanceof Shape) {  // exiting into another shape
-                return intersectionEdge.interact(lightRay, ((Shape) testComponent).refractiveIndex);
-            } else {
-                return intersectionEdge.interact(lightRay, 1);
+        boolean entering = true;  // whether the ray is entering the shape
+        for (Edge edge: edges) {
+            if (edge.containsIntersection(lightRay.getStart())) {
+                entering = false;
             }
-        } else { // ray is entering the shape
+        }
+
+        if (entering) {
             return intersectionEdge.interact(lightRay, refractiveIndex);
+        } else {
+            return intersectionEdge.interact(lightRay, 1);
         }
     }
 
@@ -129,5 +128,11 @@ public class Shape implements Component {
         }
 
         return null;
+    }
+
+
+    @Override
+    public String toString() {
+        return edges.toString();
     }
 }

@@ -70,7 +70,7 @@ public class Beam {
                 }
 
                 Component nextComponent = components.get(componentIndex);
-                LightRay newRay = nextComponent.interact(endRay, components);
+                LightRay newRay = nextComponent.interact(endRay);
 
                 LightSegment lightSegment = new LightSegment(endRay, intersections.get(intersectionIndex));
                 lightComponents.add(lightSegment);
@@ -82,6 +82,6 @@ public class Beam {
 
     @Override
     public String toString() {
-        return initialRay + "\n" + lightComponents;
+        return "\n" + lightComponents;
     }
 }

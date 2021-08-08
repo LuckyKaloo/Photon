@@ -7,7 +7,7 @@ public class Segment extends Ray {
 
     public Segment(Point start, Point end) {
         if (start.X() == end.X() && start.Y() == end.Y()) {
-            throw new IllegalArgumentException("Points are the same!");
+            throw new IllegalArgumentException("Points are the same!" + start);
         } else {
             this.gradient = (end.Y() - start.Y()) / (end.X() - start.X());
             this.angle = Math.toDegrees(Math.atan(this.gradient)) % 180;
@@ -30,7 +30,7 @@ public class Segment extends Ray {
     }
 
     @Override
-    protected boolean containsIntersection(Point point) {
+    public boolean containsIntersection(Point point) {
         // check if point is outside bounds of line on X-axis
         if (point.X() < start.X() && point.X() < end.X() ||
                 point.X() > start.X() && point.X() > end.X()) {
@@ -48,12 +48,14 @@ public class Segment extends Ray {
         return "Start: " + start + " End: " + end;
     }
 
-    public static ArrayList<Segment> pointsToSegments(ArrayList<Point> points) {
+    public static ArrayList<Segment> pointsToSegments(ArrayList<Point> points, boolean joinStartAndEnd) {
         ArrayList<Segment> segments = new ArrayList<>();
         for (int i = 0; i < points.size()-1; i++) {
             segments.add(new Segment(points.get(i), points.get(i+1)));
         }
-        segments.add(new Segment(points.get(0), points.get(points.size()-1)));
+        if (joinStartAndEnd) {
+            segments.add(new Segment(points.get(0), points.get(points.size() - 1)));
+        }
 
         return segments;
     }

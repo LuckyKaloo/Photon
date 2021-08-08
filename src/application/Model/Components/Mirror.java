@@ -17,7 +17,7 @@ public class Mirror implements Component {
     }
 
     @Override
-    public LightRay interact(LightRay lightRay, ArrayList<Component> components) {
+    public LightRay interact(LightRay lightRay) {
         return edge.interact(lightRay);
     }
 

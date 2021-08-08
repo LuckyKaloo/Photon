@@ -72,7 +72,7 @@ public class Ray {
         return null;
     }
 
-    protected boolean containsIntersection(Point point) {
+    public boolean containsIntersection(Point point) {
         if ((angle < 90 || angle > 270) && point.X() < start.X()) {  // ray only goes to the right
             return false;
         } else if ((angle > 90 && angle < 270) && point.X() > start.X()) {  // ray only goes to the left

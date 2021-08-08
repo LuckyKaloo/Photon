@@ -25,22 +25,6 @@ public class LightRay extends Ray implements LightComponent {
         return refractiveIndex;
     }
 
-    public Component nextComponent(ArrayList<Component> components) {
-        // get the point a very small distance from start
-        Point nextPoint = new Point(start.X() + Math.cos(Math.toRadians(angle)),
-                start.Y() + Math.sin(Math.toRadians(angle)));
-
-        for (Component component: components) {
-            if (component instanceof Shape) {
-                if (((Shape) component).contains(nextPoint)) {
-                    return component;
-                }
-            }
-        }
-
-        return null;
-    }
-
     @Override
     public String toString() {
         return start + " angle: " + angle + " refractive index: " + refractiveIndex;
