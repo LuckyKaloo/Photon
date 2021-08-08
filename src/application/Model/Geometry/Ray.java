@@ -1,11 +1,5 @@
 package application.Model.Geometry;
 
-import application.Model.Components.Component;
-import application.Model.Components.Edge;
-import application.Model.Light.LightRay;
-
-import java.util.ArrayList;
-
 public class Ray {
     protected double angle;
     protected Point start;
@@ -31,6 +25,16 @@ public class Ray {
         this.start = ray.start;
         this.gradient = ray.gradient;
         this.yIntercept = ray.yIntercept;
+    }
+
+    public void setAngle(double angle) {
+        this.angle = angle % 360;
+        if (this.angle < 0) {
+            this.angle += 360;
+        }
+
+        gradient = Math.tan(Math.toRadians(angle));
+        yIntercept = start.Y() - gradient * start.X();
     }
 
     public double getAngle() {

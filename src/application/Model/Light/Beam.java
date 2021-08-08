@@ -1,10 +1,9 @@
 package application.Model.Light;
 
 import application.Model.Components.Component;
-import application.Model.Components.Edge;
-import application.Model.Components.Shape;
 import application.Model.Geometry.Point;
 import application.Model.Geometry.Ray;
+import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 
@@ -12,9 +11,15 @@ public class Beam {
     private final ArrayList<LightComponent> lightComponents;
     private final Ray initialRay;
 
+    private Color color;
+
     public Beam(Ray initialRay) {
         this.lightComponents = new ArrayList<>();
         this.initialRay = initialRay;
+    }
+
+    public void setAngle(double angle) {
+        initialRay.setAngle(angle);
     }
 
     public ArrayList<LightComponent> getLightComponents() {
@@ -29,21 +34,21 @@ public class Beam {
 
             if (lightComponents.size() == 0) {
                 endRay = new LightRay(initialRay, 1);
-                lightComponents.add(endRay);
             } else {
-                endRay = (LightRay) lightComponents.get(lightComponents.size()-1);
+                endRay = (LightRay) lightComponents.remove(lightComponents.size()-1);
             }
 
             for (int i = 0; i < components.size(); i++) {
                 Component component = components.get(i);
                 Point intersection = component.intersection(endRay);
-                if (intersection != null) {
+                if (intersection != null && !intersection.equals(endRay.getStart())) {
                     intersections.add(intersection);  // intersections that the ray makes with all components
                     indexes.add(i);  // index of the component that got intersected
                 }
             }
 
-            if (intersections.size() == 0) {
+            if (intersections.size() == 0) {  // no intersections
+                lightComponents.add(endRay);
                 break;
             } else {
                 // get the component that the ray will interact with first
@@ -60,23 +65,18 @@ public class Beam {
                 }
 
                 Component nextComponent = components.get(componentIndex);
-                LightRay newRay;
-                if (nextComponent instanceof Shape) {
-                    Edge intersectionEdge = ((Shape) nextComponent).intersectionEdge(endRay);
-                    if (nextComponent == endRay.nextComponent(components)) {  // ray is exiting the component
-                        newRay = intersectionEdge.interact(endRay, 1);
-                    } else {  // ray is entering the component
-                        newRay = intersectionEdge.interact(endRay, ((Shape) nextComponent).getRefractiveIndex());
-                    }
-                } else {
-                    newRay = nextComponent.interact(endRay);
-                }
+                LightRay newRay = nextComponent.interact(endRay, components);
 
-                LightRay oldRay = (LightRay) lightComponents.remove(lightComponents.size()-1);
-                LightSegment lightSegment = new LightSegment(oldRay, intersections.get(intersectionIndex));
+                LightSegment lightSegment = new LightSegment(endRay, intersections.get(intersectionIndex));
                 lightComponents.add(lightSegment);
                 lightComponents.add(newRay);
             }
         }
+    }
+
+
+    @Override
+    public String toString() {
+        return initialRay + "\n" + lightComponents;
     }
 }

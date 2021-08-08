@@ -3,6 +3,8 @@ package application.Model.Components;
 import application.Model.Geometry.Point;
 import application.Model.Light.LightRay;
 
+import java.util.ArrayList;
+
 public class Absorber implements Component {
     private final Edge edge;
 
@@ -11,7 +13,7 @@ public class Absorber implements Component {
     }
 
     @Override
-    public LightRay interact(LightRay lightRay) {
+    public LightRay interact(LightRay lightRay, ArrayList<Component> components) {
         return edge.interact(lightRay);
     }
 

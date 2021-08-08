@@ -36,4 +36,9 @@ public class Segment extends Ray {
         return (!(point.Y() < start.Y()) || !(point.Y() < end.Y())) &&
                 (!(point.Y() > start.Y()) || !(point.Y() > end.Y()));
     }
+
+    @Override
+    public String toString() {
+        return "Start: " + start + " End: " + end;
+    }
 }

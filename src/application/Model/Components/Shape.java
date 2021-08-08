@@ -64,8 +64,21 @@ public class Shape implements Component {
     }
 
     @Override
-    public LightRay interact(LightRay lightRay) {
-        return null;
+    public LightRay interact(LightRay lightRay, ArrayList<Component> components) {
+        Edge intersectionEdge = intersectionEdge(lightRay);
+        if (this == lightRay.nextComponent(components)) { // ray is exiting the shape
+            // check the next component that it will intersect
+            LightRay testRay = new LightRay(lightRay.getAngle(), intersection(lightRay), 1);
+            Component testComponent = testRay.nextComponent(components);
+
+            if (testComponent instanceof Shape) {  // exiting into another shape
+                return intersectionEdge.interact(lightRay, ((Shape) testComponent).refractiveIndex);
+            } else {
+                return intersectionEdge.interact(lightRay, 1);
+            }
+        } else { // ray is entering the shape
+            return intersectionEdge.interact(lightRay, refractiveIndex);
+        }
     }
 
     @Override

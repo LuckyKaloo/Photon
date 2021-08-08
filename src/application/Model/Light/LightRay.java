@@ -40,4 +40,9 @@ public class LightRay extends Ray implements LightComponent {
 
         return null;
     }
+
+    @Override
+    public String toString() {
+        return start + " angle: " + angle + " refractive index: " + refractiveIndex;
+    }
 }

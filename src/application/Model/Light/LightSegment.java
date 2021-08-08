@@ -19,4 +19,9 @@ public class LightSegment extends Segment implements LightComponent {
     public double getRefractiveIndex() {
         return refractiveIndex;
     }
+
+    @Override
+    public String toString() {
+        return start + " " + end + " refractive index: " + refractiveIndex;
+    }
 }
