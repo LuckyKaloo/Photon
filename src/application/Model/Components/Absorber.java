@@ -12,6 +12,10 @@ public class Absorber implements Component {
         edge = new Edge(start, end, Edge.ABSORBER);
     }
 
+    public Edge getEdge() {
+        return edge;
+    }
+
     @Override
     public LightRay interact(LightRay lightRay, ArrayList<Component> components) {
         return edge.interact(lightRay);

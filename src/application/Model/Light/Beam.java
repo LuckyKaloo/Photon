@@ -27,6 +27,8 @@ public class Beam {
     }
 
     public void generateBeam(ArrayList<Component> components) {
+        lightComponents.clear();
+
         while (true) {
             ArrayList<Point> intersections = new ArrayList<>();
             ArrayList<Integer> indexes = new ArrayList<>();
@@ -36,6 +38,9 @@ public class Beam {
                 endRay = new LightRay(initialRay, 1);
             } else {
                 endRay = (LightRay) lightComponents.remove(lightComponents.size()-1);
+                if (endRay == null) {
+                    break;
+                }
             }
 
             for (int i = 0; i < components.size(); i++) {

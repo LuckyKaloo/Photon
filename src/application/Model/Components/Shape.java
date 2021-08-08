@@ -2,6 +2,7 @@ package application.Model.Components;
 
 import application.Model.Geometry.Point;
 import application.Model.Geometry.Ray;
+import application.Model.Geometry.Segment;
 import application.Model.Light.LightRay;
 
 import java.util.ArrayList;
@@ -23,11 +24,11 @@ public class Shape implements Component {
                 points.add((Point) object);
             }
 
+            ArrayList<Segment> segments = Segment.pointsToSegments(points);
             this.edges = new ArrayList<>();
-            for (int i = 0; i < points.size()-1; i++) {
-                this.edges.add(new Edge(points.get(i), points.get(i+1), Edge.REFRACTOR));
+            for (Segment segment: segments) {
+                this.edges.add(new Edge(segment, Edge.REFRACTOR));
             }
-            this.edges.add(new Edge(points.get(0), points.get(points.size()-1), Edge.REFRACTOR));
         } else {
             throw new IllegalArgumentException("Input an ArrayList of Point or Edge objects only");
         }

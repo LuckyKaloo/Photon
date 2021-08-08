@@ -12,6 +12,9 @@ public class Mirror implements Component {
         edge = new Edge(start, end, Edge.REFLECTOR);
     }
 
+    public Edge getEdge() {
+        return edge;
+    }
 
     @Override
     public LightRay interact(LightRay lightRay, ArrayList<Component> components) {

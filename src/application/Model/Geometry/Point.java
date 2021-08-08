@@ -13,6 +13,10 @@ public record Point(double X, double Y) {
 
 
     public boolean equals(Point point) {
-        return Math.abs(X - point.X) <= 0.8 && Math.abs(Y - point.Y) <= 0.8;
+        return equals(point, 0.8);
+    }
+
+    public boolean equals(Point point, double marginError) {
+        return Math.abs(X - point.X) <= marginError  &&  Math.abs(Y - point.Y) <= marginError;
     }
 }

@@ -17,6 +17,11 @@ public class Edge extends Segment {
         setType(type);
     }
 
+    public Edge(Segment segment, int type) {
+        super(segment);
+        setType(type);
+    }
+
     public void setType(int type) {
         if (type == REFLECTOR || type == REFRACTOR || type == ABSORBER) {
             this.type = type;

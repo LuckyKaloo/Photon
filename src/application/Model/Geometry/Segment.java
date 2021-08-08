@@ -1,5 +1,7 @@
 package application.Model.Geometry;
 
+import java.util.ArrayList;
+
 public class Segment extends Ray {
     protected final Point end;
 
@@ -17,6 +19,10 @@ public class Segment extends Ray {
 
         this.start = start;
         this.end = end;
+    }
+
+    public Segment(Segment segment) {
+        this(segment.start, segment.end);
     }
 
     public Point getEnd() {
@@ -40,5 +46,15 @@ public class Segment extends Ray {
     @Override
     public String toString() {
         return "Start: " + start + " End: " + end;
+    }
+
+    public static ArrayList<Segment> pointsToSegments(ArrayList<Point> points) {
+        ArrayList<Segment> segments = new ArrayList<>();
+        for (int i = 0; i < points.size()-1; i++) {
+            segments.add(new Segment(points.get(i), points.get(i+1)));
+        }
+        segments.add(new Segment(points.get(0), points.get(points.size()-1)));
+
+        return segments;
     }
 }
