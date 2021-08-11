@@ -1,5 +1,7 @@
 package application.Model.Geometry;
 
+import application.Model.Light.LightRay;
+
 public class Ray {
     protected double angle;
     protected Point start;
@@ -47,7 +49,7 @@ public class Ray {
 
     public Point intersection(Ray ray) {
         // calculating intersection of the 2 rays as if they were lines extending to infinity
-        if (angle == ray.angle || angle == ray.angle + 180) {
+        if ((angle - ray.angle) % 180 == 0) {
             return null;
         }
 
@@ -63,10 +65,10 @@ public class Ray {
             y = (gradient * x + yIntercept);
         }
 
-        Point point = new Point(x, y);
+        Point intersection = new Point(x, y);
 
-        if (this.containsIntersection(point) && ray.containsIntersection(point)) {
-            return point;
+        if (this.containsIntersection(intersection) && ray.containsIntersection(intersection)) {
+            return intersection;
         }
 
         return null;

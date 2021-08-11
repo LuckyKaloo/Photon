@@ -71,6 +71,7 @@ public class Shape implements Component {
         for (Edge edge: edges) {
             if (edge.containsIntersection(lightRay.getStart())) {
                 entering = false;
+                break;
             }
         }
 

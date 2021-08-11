@@ -1,13 +1,10 @@
 package application.Model.Components;
 
 import application.Model.Geometry.Point;
-import application.Model.Geometry.Ray;
 import application.Model.Light.Beam;
 import application.Model.Light.LightRay;
 
-import java.util.ArrayList;
-
-public class Source implements Component {
+public class Source implements LineComponent {
     private final int WIDTH = 5;
 
     private final Point start;

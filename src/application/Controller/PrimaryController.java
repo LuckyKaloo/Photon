@@ -4,21 +4,19 @@ import application.Model.Components.*;
 import application.Model.Geometry.Point;
 import application.Model.Geometry.Ray;
 import application.Model.Geometry.Segment;
-import application.Model.Light.Beam;
 import application.Model.Light.LightComponent;
 import application.Model.Light.LightRay;
 import application.Model.Light.LightSegment;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -27,9 +25,7 @@ import javafx.scene.paint.Color;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 
 public class PrimaryController {
     @FXML
@@ -50,8 +46,6 @@ public class PrimaryController {
     private Pane pane;
     @FXML
     private Canvas canvas;
-    @FXML
-    private AnchorPane information;
 
     // non FXML stuff
     private GraphicsContext graphicsContext;
@@ -59,6 +53,9 @@ public class PrimaryController {
 
     private Point startPoint;  // if user selected mirror or absorber, this is the first point of the component (line)
     private final ArrayList<Point> vertices = new ArrayList<>();  // if user selected shape, more than 1 point will be used
+
+    private Component hoveredComponent;  // the component that the user is hovering over
+    private Component selectedComponent;  // the component that the user has selected
 
     // colors
     private final static Color backgroundColor = Color.rgb(2, 6, 12);
@@ -73,6 +70,7 @@ public class PrimaryController {
 
     public void start() {
         graphicsContext = canvas.getGraphicsContext2D();
+        graphicsContext.setLineWidth(1.3);
         components = new ArrayList<>();
 
         // initialising canvas
@@ -123,12 +121,43 @@ public class PrimaryController {
                 } else {
                     vertices.add(selectedPoint);
                 }
+            } else {
+                Point selectedPoint = new Point(e.getX(), e.getY());
+                for (Component component : components) {
+                    if (component instanceof Shape) {
+                        if (((Shape) component).contains(selectedPoint)) {
+                            selectedComponent = component;
+                        }
+                    } else if (component instanceof LineComponent) {
+                        if (((LineComponent) component).getEdge().containsIntersection(selectedPoint)) {
+                            selectedComponent = component;
+                        }
+                    }
+                }
+            }
+
+            updateCanvas();
+        });
+
+        canvas.setOnMouseMoved(e -> {
+            if (group.getSelectedToggle() == null) {
+                Point hoveredPoint = new Point(e.getX(), e.getY());
+                hoveredComponent = null;
+                for (Component component : components) {
+                    if (component instanceof Shape) {
+                        if (((Shape) component).contains(hoveredPoint)) {
+                            hoveredComponent = component;
+                        }
+                    } else if (component instanceof LineComponent) {
+                        if (((LineComponent) component).getEdge().containsIntersection(hoveredPoint)) {
+                            hoveredComponent = component;
+                        }
+                    }
+                }
             }
 
             updateCanvas(e);
         });
-
-        canvas.setOnMouseMoved(this::updateCanvas);
 
         borderPane.setOnKeyPressed(e -> {
             switch (e.getCode()) {
@@ -177,9 +206,7 @@ public class PrimaryController {
 
                 // drawing the beam
                 graphicsContext.setStroke(beamColor);
-//                Random random = new Random();
                 for (LightComponent lightComponent: source.getBeam().getLightComponents()) {
-//                    graphicsContext.setStroke(Color.rgb(random.nextInt(200), random.nextInt(200), random.nextInt(200)));
 
                     if (lightComponent instanceof LightSegment lightSegment) {
                         drawSegment(lightSegment);
@@ -200,7 +227,6 @@ public class PrimaryController {
     // draw components that are being added
     private void updateCanvas(MouseEvent e) {
         updateCanvas();
-
 
         Point newPoint = new Point(e.getX(), e.getY());
         if (absorber.isSelected() && startPoint != null) {

@@ -31,7 +31,7 @@ public class Beam {
 
         while (true) {
             ArrayList<Point> intersections = new ArrayList<>();
-            ArrayList<Integer> indexes = new ArrayList<>();
+            ArrayList<Integer> componentIndexes = new ArrayList<>();
             LightRay endRay;
 
             if (lightComponents.size() == 0) {
@@ -46,9 +46,10 @@ public class Beam {
             for (int i = 0; i < components.size(); i++) {
                 Component component = components.get(i);
                 Point intersection = component.intersection(endRay);
+
                 if (intersection != null && !intersection.equals(endRay.getStart())) {
                     intersections.add(intersection);  // intersections that the ray makes with all components
-                    indexes.add(i);  // index of the component that got intersected
+                    componentIndexes.add(i);  // index of the component that got intersected;
                 }
             }
 
@@ -58,21 +59,19 @@ public class Beam {
             } else {
                 // get the component that the ray will interact with first
                 double minDistance = Point.distance(endRay.getStart(), intersections.get(0));
-                int componentIndex = indexes.get(0);
-                int intersectionIndex = 0;
+                int index = 0;
                 for (int i = 1; i < intersections.size(); i++) {
                     double distance = Point.distance(endRay.getStart(), intersections.get(i));
                     if (distance < minDistance) {
                         minDistance = distance;
-                        componentIndex = indexes.get(i);
-                        intersectionIndex = i;
+                        index = i;
                     }
                 }
 
-                Component nextComponent = components.get(componentIndex);
+                Component nextComponent = components.get(componentIndexes.get(index));
                 LightRay newRay = nextComponent.interact(endRay);
 
-                LightSegment lightSegment = new LightSegment(endRay, intersections.get(intersectionIndex));
+                LightSegment lightSegment = new LightSegment(endRay, intersections.get(index));
                 lightComponents.add(lightSegment);
                 lightComponents.add(newRay);
             }

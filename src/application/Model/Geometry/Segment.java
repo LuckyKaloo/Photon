@@ -31,6 +31,12 @@ public class Segment extends Ray {
 
     @Override
     public boolean containsIntersection(Point point) {
+        // check gradient
+        double gradPoint = (start.Y() - point.Y()) / (start.X() - point.X());
+        if (Math.abs(gradPoint - gradient) > 0.005) {
+            return false;
+        }
+
         // check if point is outside bounds of line on X-axis
         if (point.X() < start.X() && point.X() < end.X() ||
                 point.X() > start.X() && point.X() > end.X()) {

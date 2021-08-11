@@ -3,15 +3,14 @@ package application.Model.Components;
 import application.Model.Geometry.Point;
 import application.Model.Light.LightRay;
 
-import java.util.ArrayList;
-
-public class Mirror implements Component {
+public class Mirror implements LineComponent {
     private final Edge edge;
 
     public Mirror(Point start, Point end) {
         edge = new Edge(start, end, Edge.REFLECTOR);
     }
 
+    @Override
     public Edge getEdge() {
         return edge;
     }
