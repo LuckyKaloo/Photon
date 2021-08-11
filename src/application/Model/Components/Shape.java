@@ -10,6 +10,7 @@ import java.util.ArrayList;
 public class Shape implements Component {
     private double refractiveIndex;
     private final ArrayList<Edge> edges;
+    private final ArrayList<Point> points;
 
     public <T> Shape(double refractiveIndex, ArrayList<T> objects) {
         this.refractiveIndex = refractiveIndex;
@@ -18,13 +19,16 @@ public class Shape implements Component {
             for (T object: objects) {
                 this.edges.add((Edge) object);
             }
+
+            ArrayList<Segment> segments = new ArrayList<>(this.edges);
+            this.points = Segment.segmentsToPoints(segments);
         } else if (objects.get(0) instanceof Point) {  // inputted as ArrayList<Point>
-            ArrayList<Point> points = new ArrayList<>();
+            this.points = new ArrayList<>();
             for (T object: objects) {
-                points.add((Point) object);
+                this.points.add((Point) object);
             }
 
-            ArrayList<Segment> segments = Segment.pointsToSegments(points, true);
+            ArrayList<Segment> segments = Segment.pointsToSegments(this.points, true);
             this.edges = new ArrayList<>();
             for (Segment segment: segments) {
                 this.edges.add(new Edge(segment, Edge.REFRACTOR));
@@ -42,6 +46,10 @@ public class Shape implements Component {
 
     public ArrayList<Edge> getEdges() {
         return edges;
+    }
+
+    public ArrayList<Point> getPoints() {
+        return points;
     }
 
     public void setRefractiveIndex(double refractiveIndex) {

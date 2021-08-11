@@ -1,13 +1,13 @@
 .toggle-button {
-    -fx-background-color: rgb(215, 215, 215);
+    -fx-background-color: rgb(30, 30, 35);
     -fx-border-radius: 15 15 15 15;
     -fx-background-radius: 15 15 15 15;
 }
 
 .toggle-button:hover {
-    -fx-background-color: rgb(207, 207, 207);
+    -fx-background-color: rgb(36, 36, 66);
 }
 
 .toggle-button:selected {
-    -fx-background-color: rgb(195, 195, 195);
+    -fx-background-color: rgb(42, 52, 104);
 }

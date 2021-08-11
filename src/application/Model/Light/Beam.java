@@ -5,9 +5,10 @@ import application.Model.Geometry.Point;
 import application.Model.Geometry.Ray;
 import javafx.scene.paint.Color;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Beam {
+public class Beam implements Serializable {
     private final ArrayList<LightComponent> lightComponents;
     private final Ray initialRay;
 

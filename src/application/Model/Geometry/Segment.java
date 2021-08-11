@@ -1,5 +1,7 @@
 package application.Model.Geometry;
 
+import application.Model.Components.Edge;
+
 import java.util.ArrayList;
 
 public class Segment extends Ray {
@@ -31,9 +33,11 @@ public class Segment extends Ray {
 
     @Override
     public boolean containsIntersection(Point point) {
-        // check gradient
-        double gradPoint = (start.Y() - point.Y()) / (start.X() - point.X());
-        if (Math.abs(gradPoint - gradient) > 0.005) {
+        return containsIntersection(point, 1);
+    }
+
+    public boolean containsIntersection(Point point, double maxDistance) {
+        if (Point.distance(point, this) > maxDistance) {
             return false;
         }
 
@@ -64,5 +68,20 @@ public class Segment extends Ray {
         }
 
         return segments;
+    }
+
+    public static ArrayList<Point> segmentsToPoints(ArrayList<Segment> segments) {
+        ArrayList<Point> points = new ArrayList<>();
+        points.add(segments.get(0).start);
+        points.add(segments.get(0).end);
+        for (int i = 1; i < segments.size()-1; i++) {
+            if (segments.get(i).start.equals(points.get(points.size()-1))) {
+                points.add(segments.get(i).end);
+            } else {
+                throw new IllegalArgumentException("Segments must form a closed loop in order!");
+            }
+        }
+
+        return points;
     }
 }

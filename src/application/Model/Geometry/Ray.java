@@ -1,8 +1,8 @@
 package application.Model.Geometry;
 
-import application.Model.Light.LightRay;
+import java.io.Serializable;
 
-public class Ray {
+public class Ray implements Serializable {
     protected double angle;
     protected Point start;
 

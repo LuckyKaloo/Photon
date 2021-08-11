@@ -4,7 +4,9 @@ import application.Model.Geometry.Point;
 import application.Model.Geometry.Segment;
 import application.Model.Light.LightRay;
 
-public class Edge extends Segment {
+import java.io.Serializable;
+
+public class Edge extends Segment implements Serializable {
     public final static int REFLECTOR = 0;
     public final static int REFRACTOR = 1;
     public final static int ABSORBER = 2;
