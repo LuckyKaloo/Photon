@@ -19,7 +19,7 @@ public class Ray implements Serializable {
         this.start = start;
 
         gradient = Math.tan(Math.toRadians(angle));
-        yIntercept = start.Y() - gradient * start.X();
+        yIntercept = start.getY() - gradient * start.getX();
     }
 
     public Ray(Ray ray) {
@@ -36,7 +36,11 @@ public class Ray implements Serializable {
         }
 
         gradient = Math.tan(Math.toRadians(angle));
-        yIntercept = start.Y() - gradient * start.X();
+        yIntercept = start.getY() - gradient * start.getX();
+    }
+
+    public void setStart(Point start) {
+        this.start = start;
     }
 
     public double getAngle() {
@@ -55,10 +59,10 @@ public class Ray implements Serializable {
 
         double x, y;
         if (angle == 90 || angle == 270) {
-            x = start.X();
+            x = start.getX();
             y = ray.gradient * x + ray.yIntercept;
         } else if (ray.angle == 90 || ray.angle == 270) {
-            x = ray.start.X();
+            x = ray.start.getX();
             y = gradient * x + yIntercept;
         } else {
             x = (ray.yIntercept - yIntercept) / (gradient - ray.gradient);
@@ -75,16 +79,16 @@ public class Ray implements Serializable {
     }
 
     public boolean containsIntersection(Point point) {
-        if ((angle < 90 || angle > 270) && point.X() < start.X()) {  // ray only goes to the right
+        if ((angle < 90 || angle > 270) && point.getX() < start.getX()) {  // ray only goes to the right
             return false;
-        } else if ((angle > 90 && angle < 270) && point.X() > start.X()) {  // ray only goes to the left
+        } else if ((angle > 90 && angle < 270) && point.getX() > start.getX()) {  // ray only goes to the left
             return false;
         }
 
         // ray only goes down
-        if (angle < 180 && point.Y() < start.Y()) {  // ray only goes up
+        if (angle > 0 && angle < 180 && point.getY() < start.getY()) {  // ray only goes up
             return false;
-        } else return !(angle > 180) || !(point.Y() > start.Y());
+        } else return !(angle > 180) || !(point.getY() > start.getY());
     }
 
 

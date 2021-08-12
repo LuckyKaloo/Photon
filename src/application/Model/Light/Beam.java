@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 public class Beam implements Serializable {
     private final ArrayList<LightComponent> lightComponents;
-    private final Ray initialRay;
+    private Ray initialRay;
 
     private Color color;
 
@@ -19,12 +19,29 @@ public class Beam implements Serializable {
         this.initialRay = initialRay;
     }
 
-    public void setAngle(double angle) {
-        initialRay.setAngle(angle);
+
+    public Ray getInitialRay() {
+        return initialRay;
+    }
+
+    public Color getColor() {
+        return color;
     }
 
     public ArrayList<LightComponent> getLightComponents() {
         return lightComponents;
+    }
+
+    public void setAngle(double angle) {
+        initialRay.setAngle(angle);
+    }
+
+    public void setStart(Point start) {
+        initialRay.setStart(start);
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
     }
 
     public void generateBeam(ArrayList<Component> components) {

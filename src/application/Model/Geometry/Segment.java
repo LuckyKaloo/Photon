@@ -1,23 +1,21 @@
 package application.Model.Geometry;
 
-import application.Model.Components.Edge;
-
 import java.util.ArrayList;
 
 public class Segment extends Ray {
-    protected final Point end;
+    protected Point end;
 
     public Segment(Point start, Point end) {
-        if (start.X() == end.X() && start.Y() == end.Y()) {
+        if (start.getX() == end.getX() && start.getY() == end.getY()) {
             throw new IllegalArgumentException("Points are the same!" + start);
         } else {
-            this.gradient = (end.Y() - start.Y()) / (end.X() - start.X());
+            this.gradient = (end.getY() - start.getY()) / (end.getX() - start.getX());
             this.angle = Math.toDegrees(Math.atan(this.gradient)) % 180;
             if (this.angle < 0) {
                 this.angle += 180;
             }
         }
-        this.yIntercept = start.Y() - this.gradient * start.X();
+        this.yIntercept = start.getY() - this.gradient * start.getX();
 
         this.start = start;
         this.end = end;
@@ -25,6 +23,23 @@ public class Segment extends Ray {
 
     public Segment(Segment segment) {
         this(segment.start, segment.end);
+    }
+
+    @Override
+    public void setAngle(double angle) {
+        Point midPoint = new Point((start.getX() + end.getX()) / 2, (start.getY() + end.getY()) / 2);
+        double width = Math.sqrt((start.getX() - end.getX()) * (start.getX() - end.getX()) +
+                (start.getY() - end.getY()) * (start.getY() - end.getY()));
+        double radius = width / 2;
+
+        double actualAngle = angle % 180;
+        if (actualAngle < 0) {
+            actualAngle += 180;
+        }
+        actualAngle = Math.toRadians(actualAngle);
+
+        start = new Point(midPoint.getX() - radius * Math.cos(actualAngle), midPoint.getY() - radius * Math.sin(actualAngle));
+        end = new Point(midPoint.getX() + radius * Math.cos(actualAngle), midPoint.getY() + radius * Math.sin(actualAngle));
     }
 
     public Point getEnd() {
@@ -42,15 +57,15 @@ public class Segment extends Ray {
         }
 
         // check if point is outside bounds of line on X-axis
-        if (point.X() < start.X() && point.X() < end.X() ||
-                point.X() > start.X() && point.X() > end.X()) {
+        if (point.getX() < start.getX() && point.getX() < end.getX() ||
+                point.getX() > start.getX() && point.getX() > end.getX()) {
 
             return false;
         }
 
         // check if point is outside bounds of line on Y-axis
-        return (!(point.Y() < start.Y()) || !(point.Y() < end.Y())) &&
-                (!(point.Y() > start.Y()) || !(point.Y() > end.Y()));
+        return (!(point.getY() < start.getY()) || !(point.getY() < end.getY())) &&
+                (!(point.getY() > start.getY()) || !(point.getY() > end.getY()));
     }
 
     @Override

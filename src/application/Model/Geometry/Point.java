@@ -2,17 +2,25 @@ package application.Model.Geometry;
 
 import java.io.Serializable;
 
-public record Point(double X, double Y) implements Serializable {
+public final class Point implements Serializable {
+    private double x;
+    private double y;
+
+    public Point(double X, double Y) {
+        this.x = X;
+        this.y = Y;
+    }
+
     // distance between 2 points
     public static double distance(Point point1, Point point2) {
-        return Math.sqrt((point1.X - point2.X) * (point1.X - point2.X) +
-                (point1.Y - point2.Y) * (point1.Y - point2.Y));
+        return Math.sqrt((point1.x - point2.x) * (point1.x - point2.x) +
+                (point1.y - point2.y) * (point1.y - point2.y));
     }
 
     public static double distance(Point point, Ray ray) {
         Point start = ray.start;
-        Point end = new Point(ray.start.X + 10000 * Math.cos(Math.toRadians(ray.getAngle())),
-                ray.start.Y + 10000 * Math.sin(Math.toRadians(ray.getAngle())));
+        Point end = new Point(ray.start.x + 10000 * Math.cos(Math.toRadians(ray.getAngle())),
+                ray.start.y + 10000 * Math.sin(Math.toRadians(ray.getAngle())));
         return distance(point, new Segment(start, end));
     }
 
@@ -20,20 +28,21 @@ public record Point(double X, double Y) implements Serializable {
     public static double distance(Point point, Segment segment) {
         Point start = segment.start;
         Point end = segment.end;
-        double numerator = Math.abs((end.X - start.X) * (start.Y - point.Y) - (start.X - point.X) * (end.Y - start.Y));
-        double denominator = Math.sqrt((end.X - start.X) * (end.X - start.X) + (end.Y - start.Y) * (end.Y - start.Y));
+        double numerator = Math.abs((point.x - end.x) * (start.y - point.y) - (point.x - start.x) * (end.y - point.y));
+        double denominator = Math.sqrt((end.x - start.x) * (end.x - start.x) + (end.y - start.y) * (end.y - start.y));
+
         return numerator / denominator;
     }
 
     @Override
     public String toString() {
-        return String.format("(%.1f, %.1f)", X, Y);
+        return String.format("(%.1f, %.1f)", x, y);
     }
 
 
     // prints the X and Y coordinates to more decimal places
     public String fullToString() {
-        return "(" + X + "," + Y + ")";
+        return "(" + x + "," + y + ")";
     }
 
 
@@ -43,5 +52,21 @@ public record Point(double X, double Y) implements Serializable {
 
     public boolean equals(Point point, double marginError) {
         return distance(this, point) < marginError;
+    }
+
+    public double getX() {
+        return x;
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    public void setX(double x) {
+        this.x = x;
+    }
+
+    public void setY(double y) {
+        this.y = y;
     }
 }
