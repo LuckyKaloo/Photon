@@ -7,9 +7,6 @@ import javafx.scene.paint.Color;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
 
 public class Beam implements Serializable {
     private final ArrayList<LightComponent> lightComponents;

@@ -34,13 +34,15 @@ public class Ray implements Serializable {
         if (this.angle < 0) {
             this.angle += 360;
         }
-
-        gradient = Math.tan(Math.toRadians(angle));
-        yIntercept = start.getY() - gradient * start.getX();
     }
 
     public void setStart(Point start) {
         this.start = start;
+    }
+
+    public void updateRay() {
+        gradient = Math.tan(Math.toRadians(angle));
+        yIntercept = start.getY() - gradient * start.getX();
     }
 
     public double getAngle() {

@@ -127,4 +127,8 @@ public class Edge extends Segment implements Serializable {
 
         return new LightRay(finalAngle, intersection, startIndex);
     }
+
+    public String getReference() {
+        return ((Object) this).toString();
+    }
 }

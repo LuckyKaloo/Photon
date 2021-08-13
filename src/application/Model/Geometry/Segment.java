@@ -40,10 +40,21 @@ public class Segment extends Ray {
 
         start = new Point(midPoint.getX() - radius * Math.cos(actualAngle), midPoint.getY() - radius * Math.sin(actualAngle));
         end = new Point(midPoint.getX() + radius * Math.cos(actualAngle), midPoint.getY() + radius * Math.sin(actualAngle));
+
+        updateSegment();
     }
 
     public Point getEnd() {
         return end;
+    }
+
+    public void updateSegment() {
+        this.gradient = (end.getY() - start.getY()) / (end.getX() - start.getX());
+        this.angle = Math.toDegrees(Math.atan(this.gradient)) % 180;
+        if (this.angle < 0) {
+            this.angle += 180;
+        }
+        this.yIntercept = start.getY() - this.gradient * start.getX();
     }
 
     @Override

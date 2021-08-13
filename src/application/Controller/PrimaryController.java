@@ -193,15 +193,15 @@ public class PrimaryController {
         // show relevant information panels and add the information
         if (selectedComponent instanceof Shape shape) {
             shapeInformation.setVisible(true);
-            shapeRefractiveIndex.setText(shape.getRefractiveIndex() + "");
+            shapeRefractiveIndex.setText(String.format("%.2f", shape.getRefractiveIndex()));
         } else if (selectedComponent instanceof LineComponent lineComponent) {
             lineComponentInformation.setVisible(true);
-            lineComponentRotation.setText(lineComponent.getEdge().getAngle() + "");
+            lineComponentRotation.setText(String.format("%.2f", lineComponent.getEdge().getAngle()));
         } else if (selectedComponent instanceof Source source) {
             sourceInformation.setVisible(true);
-            sourceLayoutX.setText(source.getBeam().getInitialRay().getStart().getX() + "");
-            sourceLayoutY.setText(source.getBeam().getInitialRay().getStart().getY() + "");
-            sourceRotation.setText(source.getBeam().getInitialRay().getAngle() + "");
+            sourceLayoutX.setText(String.format("%.1f", source.getBeam().getInitialRay().getStart().getX()));
+            sourceLayoutY.setText(String.format("%.1f", source.getBeam().getInitialRay().getStart().getY()));
+            sourceRotation.setText(String.format("%.2f", source.getBeam().getInitialRay().getAngle()));
             sourceColor.setValue(source.getBeam().getColor());
         }
     }
@@ -211,8 +211,9 @@ public class PrimaryController {
         shapePointLayoutX.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) {
                 try {
-                    if (selectedComponent instanceof Shape) {
+                    if (selectedComponent instanceof Shape shape) {
                         selectedPoint.setX(Double.parseDouble(shapePointLayoutX.getText()));
+                        shape.updateEdges();
                         updateCanvas();
                     }
                 } catch (NumberFormatException ex) {
@@ -224,8 +225,9 @@ public class PrimaryController {
         shapePointLayoutY.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) {
                 try {
-                    if (selectedComponent instanceof Shape) {
+                    if (selectedComponent instanceof Shape shape) {
                         selectedPoint.setY(Double.parseDouble(shapePointLayoutY.getText()));
+                        shape.updateEdges();
                         updateCanvas();
                     }
                 } catch (NumberFormatException ex) {
@@ -252,8 +254,9 @@ public class PrimaryController {
         lineComponentPointLayoutX.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) {
                 try {
-                    if (selectedComponent instanceof LineComponent) {
+                    if (selectedComponent instanceof LineComponent lineComponent) {
                         selectedPoint.setX(Double.parseDouble(lineComponentPointLayoutX.getText()));
+                        lineComponent.getEdge().updateSegment();
                         updateCanvas();
                     }
                 } catch (NumberFormatException ex) {
@@ -265,9 +268,9 @@ public class PrimaryController {
         lineComponentPointLayoutY.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) {
                 try {
-                    System.out.println(System.currentTimeMillis());
-                    if (selectedComponent instanceof LineComponent) {
+                    if (selectedComponent instanceof LineComponent lineComponent) {
                         selectedPoint.setY(Double.parseDouble(lineComponentPointLayoutY.getText()));
+                        lineComponent.getEdge().updateSegment();
                         updateCanvas();
                     }
                 } catch (NumberFormatException ex) {
@@ -296,8 +299,7 @@ public class PrimaryController {
                 try {
                     if (selectedComponent instanceof Source source) {
                         source.getBeam().getInitialRay().getStart().setX(Double.parseDouble(sourceLayoutX.getText()));
-                        source.getBeam().getInitialRay().setAngle(source.getBeam().getInitialRay().getAngle());
-                        source.getBeam().generateBeam(components);
+                        source.getBeam().getInitialRay().updateRay();
                         updateCanvas();
                     }
                 } catch (NumberFormatException ex) {
@@ -311,8 +313,7 @@ public class PrimaryController {
                 try {
                     if (selectedComponent instanceof Source source) {
                         source.getBeam().getInitialRay().getStart().setY(Double.parseDouble(sourceLayoutY.getText()));
-                        source.getBeam().getInitialRay().setAngle(source.getBeam().getInitialRay().getAngle());
-                        source.getBeam().generateBeam(components);
+                        source.getBeam().getInitialRay().updateRay();
                         updateCanvas();
                     }
                 } catch (NumberFormatException ex) {
@@ -326,7 +327,7 @@ public class PrimaryController {
                 try {
                     if (selectedComponent instanceof Source source) {
                         source.getBeam().getInitialRay().setAngle(Double.parseDouble(sourceRotation.getText()));
-                        source.getBeam().generateBeam(components);
+                        source.getBeam().getInitialRay().updateRay();
                         updateCanvas();
                     }
                 } catch (NumberFormatException ex) {
@@ -520,7 +521,6 @@ public class PrimaryController {
         for (Component component: components) {
             if (component instanceof Source source) {
                 source.getBeam().generateBeam(components);
-                System.out.println("generate beam");
             }
         }
 

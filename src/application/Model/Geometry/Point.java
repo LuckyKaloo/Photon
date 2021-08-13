@@ -37,28 +37,10 @@ public final class Point implements Serializable {
         }
     }
 
-    public static double distance(Point point, Segment segment, boolean test) {
-        Point start = segment.start;
-        Point end = segment.end;
-        double numerator = Math.abs((point.x - end.x) * (start.y - point.y) - (point.x - start.x) * (end.y - point.y));
-        double denominator = Math.sqrt((end.x - start.x) * (end.x - start.x) + (end.y - start.y) * (end.y - start.y));
-
-        System.out.print(numerator + " " + denominator);
-
-        return numerator / denominator;
-    }
-
     @Override
     public String toString() {
         return String.format("(%.1f, %.1f)", x, y);
     }
-
-
-    // prints the X and Y coordinates to more decimal places
-    public String fullToString() {
-        return "(" + x + "," + y + ")";
-    }
-
 
     public boolean equals(Point point) {
         return equals(point, 1);
