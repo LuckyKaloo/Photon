@@ -11,16 +11,8 @@ public class Source implements Component {
         beam = new Beam(new LightRay(0, start, 1));
     }
 
-    public Point getStart() {
-        return beam.getInitialRay().getStart();
-    }
-
     public Beam getBeam() {
         return beam;
-    }
-
-    public void setAngle(double angle) {
-        beam.setAngle(angle);
     }
 
     @Override

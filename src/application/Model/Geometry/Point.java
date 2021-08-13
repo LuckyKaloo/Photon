@@ -26,10 +26,24 @@ public final class Point implements Serializable {
 
     // shortest distance between a point and a line -> https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
     public static double distance(Point point, Segment segment) {
+        // error is that the distance is calculated as if the line extends to infinity and does not consider the endpoints
+        Point projection = segment.infiniteLineIntersection(new Ray(segment.getAngle() + 90, point));
+        Point start = segment.start;
+        Point end = segment.end;
+        if (segment.containsIntersection(projection)) {
+            return Point.distance(point, projection);
+        } else {
+            return Math.min(Point.distance(point, start), Point.distance(point, end));
+        }
+    }
+
+    public static double distance(Point point, Segment segment, boolean test) {
         Point start = segment.start;
         Point end = segment.end;
         double numerator = Math.abs((point.x - end.x) * (start.y - point.y) - (point.x - start.x) * (end.y - point.y));
         double denominator = Math.sqrt((end.x - start.x) * (end.x - start.x) + (end.y - start.y) * (end.y - start.y));
+
+        System.out.print(numerator + " " + denominator);
 
         return numerator / denominator;
     }

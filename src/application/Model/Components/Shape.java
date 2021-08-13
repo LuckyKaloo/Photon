@@ -12,6 +12,8 @@ public class Shape implements Component {
     private final ArrayList<Edge> edges;
     private final ArrayList<Point> points;
 
+    private int layer;  // if shapes are stacked on each other, then this determines which one is clicked by the user
+
     public <T> Shape(double refractiveIndex, ArrayList<T> objects) {
         this.refractiveIndex = refractiveIndex;
         if (objects.get(0) instanceof Edge) {  // inputted as ArrayList<Edge>
@@ -72,12 +74,20 @@ public class Shape implements Component {
         return count % 2 == 1;
     }
 
+    public void setLayer(int layer) {
+        this.layer = layer;
+    }
+
+    public int getLayer() {
+        return layer;
+    }
+
     @Override
     public LightRay interact(LightRay lightRay) {
         Edge intersectionEdge = intersectionEdge(lightRay);
         boolean entering = true;  // whether the ray is entering the shape
         for (Edge edge: edges) {
-            if (edge.containsIntersection(lightRay.getStart())) {
+            if (edge.containsPoint(lightRay.getStart())) {
                 entering = false;
                 break;
             }

@@ -48,10 +48,23 @@ public class Segment extends Ray {
 
     @Override
     public boolean containsIntersection(Point point) {
-        return containsIntersection(point, 1);
+        // check if point is outside bounds of line on X-axis
+        if (point.getX() < start.getX() && point.getX() < end.getX() ||
+                point.getX() > start.getX() && point.getX() > end.getX()) {
+
+            return false;
+        }
+
+        // check if point is outside bounds of line on Y-axis
+        return (!(point.getY() < start.getY()) || !(point.getY() < end.getY())) &&
+                (!(point.getY() > start.getY()) || !(point.getY() > end.getY()));
     }
 
-    public boolean containsIntersection(Point point, double maxDistance) {
+    public boolean containsPoint(Point point) {
+        return containsPoint(point, 1);
+    }
+
+    public boolean containsPoint(Point point, double maxDistance) {
         if (Point.distance(point, this) > maxDistance) {
             return false;
         }

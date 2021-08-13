@@ -24,6 +24,7 @@ import javafx.scene.paint.Color;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class PrimaryController {
     @FXML
@@ -97,7 +98,6 @@ public class PrimaryController {
     // colors
     private final static Color backgroundColor = Color.rgb(2, 6, 12);
     private final static Color shapeColor = Color.rgb(150, 150, 220);
-    private final static Color beamColor = Color.rgb(224, 225, 48);
     private final static Color absorberColor = Color.rgb(93, 231, 48);
     private final static Color mirrorColor = Color.rgb(192, 215, 231);
 
@@ -213,6 +213,7 @@ public class PrimaryController {
                 try {
                     if (selectedComponent instanceof Shape) {
                         selectedPoint.setX(Double.parseDouble(shapePointLayoutX.getText()));
+                        updateCanvas();
                     }
                 } catch (NumberFormatException ex) {
                     ex.printStackTrace();
@@ -225,6 +226,7 @@ public class PrimaryController {
                 try {
                     if (selectedComponent instanceof Shape) {
                         selectedPoint.setY(Double.parseDouble(shapePointLayoutY.getText()));
+                        updateCanvas();
                     }
                 } catch (NumberFormatException ex) {
                     ex.printStackTrace();
@@ -237,6 +239,7 @@ public class PrimaryController {
                 try {
                     if (selectedComponent instanceof Shape shape) {
                         shape.setRefractiveIndex(Double.parseDouble(shapeRefractiveIndex.getText()));
+                        updateCanvas();
                     }
                 } catch (NumberFormatException ex) {
                     ex.printStackTrace();
@@ -251,6 +254,7 @@ public class PrimaryController {
                 try {
                     if (selectedComponent instanceof LineComponent) {
                         selectedPoint.setX(Double.parseDouble(lineComponentPointLayoutX.getText()));
+                        updateCanvas();
                     }
                 } catch (NumberFormatException ex) {
                     ex.printStackTrace();
@@ -261,8 +265,10 @@ public class PrimaryController {
         lineComponentPointLayoutY.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) {
                 try {
+                    System.out.println(System.currentTimeMillis());
                     if (selectedComponent instanceof LineComponent) {
                         selectedPoint.setY(Double.parseDouble(lineComponentPointLayoutY.getText()));
+                        updateCanvas();
                     }
                 } catch (NumberFormatException ex) {
                     ex.printStackTrace();
@@ -275,6 +281,7 @@ public class PrimaryController {
                 try {
                     if (selectedComponent instanceof LineComponent lineComponent) {
                         lineComponent.getEdge().setAngle(Double.parseDouble(lineComponentRotation.getText()));
+                        updateCanvas();
                     }
                 } catch (NumberFormatException ex) {
                     ex.printStackTrace();
@@ -288,7 +295,10 @@ public class PrimaryController {
             if (e.getCode() == KeyCode.ENTER) {
                 try {
                     if (selectedComponent instanceof Source source) {
-                        source.getStart().setX(Double.parseDouble(sourceLayoutX.getText()));
+                        source.getBeam().getInitialRay().getStart().setX(Double.parseDouble(sourceLayoutX.getText()));
+                        source.getBeam().getInitialRay().setAngle(source.getBeam().getInitialRay().getAngle());
+                        source.getBeam().generateBeam(components);
+                        updateCanvas();
                     }
                 } catch (NumberFormatException ex) {
                     ex.printStackTrace();
@@ -300,7 +310,10 @@ public class PrimaryController {
             if (e.getCode() == KeyCode.ENTER) {
                 try {
                     if (selectedComponent instanceof Source source) {
-                        source.getStart().setY(Double.parseDouble(sourceLayoutY.getText()));
+                        source.getBeam().getInitialRay().getStart().setY(Double.parseDouble(sourceLayoutY.getText()));
+                        source.getBeam().getInitialRay().setAngle(source.getBeam().getInitialRay().getAngle());
+                        source.getBeam().generateBeam(components);
+                        updateCanvas();
                     }
                 } catch (NumberFormatException ex) {
                     ex.printStackTrace();
@@ -312,7 +325,9 @@ public class PrimaryController {
             if (e.getCode() == KeyCode.ENTER) {
                 try {
                     if (selectedComponent instanceof Source source) {
-                        source.setAngle(Double.parseDouble(sourceRotation.getText()));
+                        source.getBeam().getInitialRay().setAngle(Double.parseDouble(sourceRotation.getText()));
+                        source.getBeam().generateBeam(components);
+                        updateCanvas();
                     }
                 } catch (NumberFormatException ex) {
                     ex.printStackTrace();
@@ -323,6 +338,7 @@ public class PrimaryController {
         sourceColor.setOnAction(e -> {
             if (selectedComponent instanceof Source source) {
                 source.getBeam().setColor(sourceColor.getValue());
+                updateCanvas();
             }
         });
     }
@@ -385,33 +401,8 @@ public class PrimaryController {
                     vertices.add(selectedPoint);
                 }
             } else {
-                selectedComponent = null;
-
-                Point selectedPoint = new Point(e.getX(), e.getY());
-                for (Component component : components) {
-                    if (component instanceof Shape) {
-                        if (((Shape) component).contains(selectedPoint)) {
-                            selectedComponent = component;
-                        }
-                    } else if (component instanceof LineComponent lineComponent) {
-                        if (Point.distance(selectedPoint, lineComponent.getEdge()) < maxDistanceSelect) {
-                            selectedComponent = component;
-                        }
-                    } else if (component instanceof Source source) {
-                        for (LightComponent lightComponent: source.getBeam().getLightComponents()) {
-                            if (lightComponent instanceof LightRay lightRay) {
-                                if (Point.distance(selectedPoint, lightRay) < maxDistanceSelect * 0.5) {
-                                    selectedComponent = component;
-                                }
-                            } else if (lightComponent instanceof LightSegment lightSegment) {
-                                if (Point.distance(selectedPoint, lightSegment) < maxDistanceSelect * 0.5) {
-                                    selectedComponent = component;
-                                }
-                            }
-                        }
-                    }
-                }
-
+                selectedComponent = findMousedComponent(e);
+                selectedPoint = findClickedPoint(e);
                 showInformation();
             }
 
@@ -419,43 +410,117 @@ public class PrimaryController {
         });
 
         canvas.setOnMouseMoved(e -> {
-            hoveredComponent = null;
-            if (group.getSelectedToggle() == null) {
-                Point hoveredPoint = new Point(e.getX(), e.getY());
-                for (Component component : components) {
-                    if (component instanceof Shape shape) {
-                        if (shape.contains(hoveredPoint)) {
-                            hoveredComponent = component;
+            hoveredComponent = findMousedComponent(e);
+            updateCanvas(e);
+        });
+    }
+
+    // finding the clicked component
+    private Component findMousedComponent(MouseEvent e) {
+        Component mousedComponent = null;
+        ArrayList<Component> clickedComponents = new ArrayList<>();
+        HashMap<Component, Double> distances = new HashMap<>();
+        int highest = 0;  // shape -> 0, line component -> 1, source -> 2
+
+        Point mousedPoint = new Point(e.getX(), e.getY());
+        for (Component component: components) {
+            if (component instanceof Shape shape) {
+                if (shape.contains(mousedPoint)) {
+                    clickedComponents.add(component);
+                }
+            } else if (component instanceof LineComponent lineComponent) {
+                double distance = Point.distance(mousedPoint, lineComponent.getEdge());
+                if (distance < maxDistanceSelect) {
+                    clickedComponents.add(component);
+                    distances.put(component, distance);
+                    highest = Math.max(highest, 1);
+                }
+            } else if (component instanceof Source source) {
+                for (LightComponent lightComponent: source.getBeam().getLightComponents()) {
+                    if (lightComponent instanceof LightRay lightRay) {
+                        double distance = Point.distance(mousedPoint, lightRay);
+                        if (distance < maxDistanceSelect * 0.5) {
+                            clickedComponents.add(component);
+                            distances.put(component, distance);
+                            highest = 2;
+                            break;
                         }
-                    } else if (component instanceof LineComponent lineComponent) {
-                        if (Point.distance(hoveredPoint, lineComponent.getEdge()) < maxDistanceSelect) {
-                            hoveredComponent = component;
-                        }
-                    } else if (component instanceof Source source) {
-                        for (LightComponent lightComponent: source.getBeam().getLightComponents()) {
-                            if (lightComponent instanceof LightRay lightRay) {
-                                if (Point.distance(hoveredPoint, lightRay) < maxDistanceSelect * 0.5) {
-                                    hoveredComponent = component;
-                                }
-                            } else if (lightComponent instanceof LightSegment lightSegment) {
-                                if (Point.distance(hoveredPoint, lightSegment) < maxDistanceSelect * 0.5) {
-                                    hoveredComponent = component;
-                                }
-                            }
+                    } else if (lightComponent instanceof LightSegment lightSegment) {
+                        double distance = Point.distance(mousedPoint, lightSegment);
+                        if (distance < maxDistanceSelect * 0.5) {
+                            clickedComponents.add(component);
+                            distances.put(component, distance);
+                            highest = 2;
+                            break;
                         }
                     }
                 }
             }
+        }
 
-            updateCanvas(e);
-        });
+        switch (highest) {
+            case 0 -> {
+                int highestLayer = -1;
+                for (Component component: clickedComponents) {
+                    if (component instanceof Shape shape) {
+                        if (shape.getLayer() > highestLayer) {
+                            mousedComponent = shape;
+                            highestLayer = shape.getLayer();
+                        }
+                    }
+                }
+            }
+            case 1 -> {
+                double minDistance = 0;
+                for (Component component: clickedComponents) {
+                    if (component instanceof LineComponent) {
+                        if (minDistance == 0 || distances.get(component) < minDistance) {
+                            mousedComponent = component;
+                            minDistance = distances.get(component);
+                        }
+                    }
+                }
+            } case 2 -> {
+                double minDistance = 0;
+                for (Component component: clickedComponents) {
+                    if (component instanceof Source) {
+                        if (minDistance == 0 || distances.get(component) < minDistance) {
+                            mousedComponent = component;
+                            minDistance = distances.get(component);
+                        }
+                    }
+                }
+            }
+        }
+
+        return mousedComponent;
+    }
+
+    private Point findClickedPoint(MouseEvent e) {
+        Point clickedPoint = new Point(e.getX(), e.getY());
+        if (selectedComponent instanceof Shape shape) {
+            for (Point point: shape.getPoints()) {
+                if (point.equals(clickedPoint)) {
+                    return point;
+                }
+            }
+        } else if (selectedComponent instanceof LineComponent lineComponent) {
+            if (lineComponent.getEdge().getStart().equals(clickedPoint)) {
+                return lineComponent.getEdge().getStart();
+            } else if (lineComponent.getEdge().getEnd().equals(clickedPoint)) {
+                return lineComponent.getEdge().getEnd();
+            }
+        }
+
+        return null;
     }
 
     // drawing fully formed components
     private void updateCanvas() {
         for (Component component: components) {
-            if (component instanceof Source) {
-                ((Source) component).getBeam().generateBeam(components);
+            if (component instanceof Source source) {
+                source.getBeam().generateBeam(components);
+                System.out.println("generate beam");
             }
         }
 
@@ -488,7 +553,7 @@ public class PrimaryController {
                 if (component instanceof Shape) {
                     graphicsContext.setStroke(shapeColor);
                 } else if (component instanceof Source source) {
-                    graphicsContext.setStroke(beamColor);
+                    graphicsContext.setStroke(source.getBeam().getColor());
                 } else if (component instanceof Absorber) {
                     graphicsContext.setStroke(absorberColor);
                 } else if (component instanceof Mirror) {

@@ -51,7 +51,7 @@ public class Ray implements Serializable {
         return start;
     }
 
-    public Point intersection(Ray ray) {
+    public Point infiniteLineIntersection(Ray ray) {
         // calculating intersection of the 2 rays as if they were lines extending to infinity
         if ((angle - ray.angle) % 180 == 0) {
             return null;
@@ -69,7 +69,11 @@ public class Ray implements Serializable {
             y = (gradient * x + yIntercept);
         }
 
-        Point intersection = new Point(x, y);
+        return new Point(x, y);
+    }
+
+    public Point intersection(Ray ray) {
+        Point intersection = infiniteLineIntersection(ray);
 
         if (this.containsIntersection(intersection) && ray.containsIntersection(intersection)) {
             return intersection;

@@ -7,16 +7,20 @@ import javafx.scene.paint.Color;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
 public class Beam implements Serializable {
     private final ArrayList<LightComponent> lightComponents;
-    private Ray initialRay;
+    private final Ray initialRay;
 
     private Color color;
 
     public Beam(Ray initialRay) {
         this.lightComponents = new ArrayList<>();
         this.initialRay = initialRay;
+        this.color = Color.WHITE;
     }
 
 
@@ -30,14 +34,6 @@ public class Beam implements Serializable {
 
     public ArrayList<LightComponent> getLightComponents() {
         return lightComponents;
-    }
-
-    public void setAngle(double angle) {
-        initialRay.setAngle(angle);
-    }
-
-    public void setStart(Point start) {
-        initialRay.setStart(start);
     }
 
     public void setColor(Color color) {
