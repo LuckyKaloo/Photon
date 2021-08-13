@@ -90,8 +90,6 @@ public class PrimaryController {
     private Component selectedComponent;  // the component that the user has selected
     private Point selectedPoint;  // the point that the user has selected
 
-    private ToggleGroup group;
-
 
     private final static int maxDistanceSelect = 3;
 
@@ -120,7 +118,7 @@ public class PrimaryController {
 
 
         // initialising buttons
-        group = new ToggleGroup();
+        ToggleGroup group = new ToggleGroup();
         source.setToggleGroup(group);
         absorber.setToggleGroup(group);
         shape.setToggleGroup(group);

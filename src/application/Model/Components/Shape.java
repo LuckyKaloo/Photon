@@ -9,8 +9,8 @@ import java.util.ArrayList;
 
 public class Shape implements Component {
     private double refractiveIndex;
-    private ArrayList<Edge> edges;
-    private ArrayList<Point> points;
+    private final ArrayList<Edge> edges;
+    private final ArrayList<Point> points;
 
     private int layer;  // if shapes are stacked on each other, then this determines which one is clicked by the user
 
@@ -44,11 +44,6 @@ public class Shape implements Component {
         for (Edge edge: edges) {
             edge.updateSegment();
         }
-    }
-
-    public void updatePoints() {
-        ArrayList<Segment> segments = new ArrayList<>(this.edges);
-        this.points = Segment.segmentsToPoints(segments);
     }
 
 
