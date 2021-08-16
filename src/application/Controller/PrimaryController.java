@@ -19,7 +19,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+
 import javafx.scene.paint.Color;
 
 import java.io.*;
@@ -31,8 +31,6 @@ public class PrimaryController {
     private BorderPane borderPane;
     @FXML
     private MenuBar menuBar;
-    @FXML
-    private VBox componentOptions;
     @FXML
     private ToggleButton source;
     @FXML
@@ -51,8 +49,6 @@ public class PrimaryController {
     private Pane information;
     @FXML
     private AnchorPane shapeInformation;
-    @FXML
-    private Canvas shapeCanvas;
     @FXML
     private TextField shapePointLayoutX;
     @FXML
@@ -91,13 +87,13 @@ public class PrimaryController {
     private Point selectedPoint;  // the point that the user has selected
 
 
-    private final static int maxDistanceSelect = 3;
+    private final static int maxDistanceSelect = 6;
 
     // colors
     private final static Color backgroundColor = Color.rgb(2, 6, 12);
-    private final static Color shapeColor = Color.rgb(150, 150, 220);
-    private final static Color absorberColor = Color.rgb(93, 231, 48);
-    private final static Color mirrorColor = Color.rgb(192, 215, 231);
+    private final static Color shapeColor = Color.rgb(199, 111, 243);
+    private final static Color absorberColor = Color.rgb(126, 252, 137);
+    private final static Color mirrorColor = Color.rgb(70, 141, 246);
 
     private final static Color shapeDrawingColor = Color.rgb(239, 84, 84);
 
@@ -192,9 +188,25 @@ public class PrimaryController {
         if (selectedComponent instanceof Shape shape) {
             shapeInformation.setVisible(true);
             shapeRefractiveIndex.setText(String.format("%.2f", shape.getRefractiveIndex()));
+
+            if (selectedPoint != null) {
+                shapePointLayoutX.setText(String.format("%.1f", selectedPoint.getX()));
+                shapePointLayoutY.setText(String.format("%.1f", selectedPoint.getY()));
+            } else {
+                shapePointLayoutX.setText("");
+                shapePointLayoutY.setText("");
+            }
         } else if (selectedComponent instanceof LineComponent lineComponent) {
             lineComponentInformation.setVisible(true);
             lineComponentRotation.setText(String.format("%.2f", lineComponent.getEdge().getAngle()));
+
+            if (selectedPoint != null) {
+                lineComponentPointLayoutX.setText(String.format("%.1f", selectedPoint.getX()));
+                lineComponentPointLayoutY.setText(String.format("%.1f", selectedPoint.getY()));
+            } else {
+                lineComponentPointLayoutX.setText("");
+                lineComponentPointLayoutY.setText("");
+            }
         } else if (selectedComponent instanceof Source source) {
             sourceInformation.setVisible(true);
             sourceLayoutX.setText(String.format("%.1f", source.getBeam().getInitialRay().getStart().getX()));
@@ -211,7 +223,7 @@ public class PrimaryController {
                 try {
                     if (selectedComponent instanceof Shape shape) {
                         selectedPoint.setX(Double.parseDouble(shapePointLayoutX.getText()));
-                        shape.updateEdges();
+                        shape.update();
                         updateCanvas();
                     }
                 } catch (NumberFormatException ex) {
@@ -225,7 +237,7 @@ public class PrimaryController {
                 try {
                     if (selectedComponent instanceof Shape shape) {
                         selectedPoint.setY(Double.parseDouble(shapePointLayoutY.getText()));
-                        shape.updateEdges();
+                        shape.update();
                         updateCanvas();
                     }
                 } catch (NumberFormatException ex) {
@@ -361,6 +373,13 @@ public class PrimaryController {
                         updateCanvas();
                     }
                 }
+                case DELETE -> {
+                    if (selectedComponent != null) {
+                        components.remove(selectedComponent);
+                        selectedComponent = null;
+                        updateCanvas();
+                    }
+                }
             }
         });
     }
@@ -370,32 +389,49 @@ public class PrimaryController {
      */
 
     private void initialiseCanvasActions() {
-        canvas.setOnMouseClicked(e -> {
+        canvas.setOnMousePressed(e -> {
             if (source.isSelected()) {
-                components.add(new Source(new Point(e.getX(), e.getY())));
+                selectedPoint = null;
+                selectedComponent = new Source(new Point(e.getX(), e.getY()));
+                components.add(selectedComponent);
                 removedComponents.clear();
             } else if (absorber.isSelected()) {
+                selectedPoint = null;
                 if (startPoint == null) {
                     startPoint = new Point(e.getX(), e.getY());
                 } else {
-                    components.add(new Absorber(startPoint, new Point(e.getX(), e.getY())));
+                    selectedComponent = new Absorber(startPoint, new Point(e.getX(), e.getY()));
+                    components.add(selectedComponent);
                     removedComponents.clear();
                     startPoint = null;
+
+                    lineComponentPointLayoutX.setDisable(true);
+                    lineComponentPointLayoutY.setDisable(true);
                 }
             } else if (mirror.isSelected()){
+                selectedPoint = null;
                 if (startPoint == null) {
                     startPoint = new Point(e.getX(), e.getY());
                 } else {
-                    components.add(new Mirror(startPoint, new Point(e.getX(), e.getY())));
+                    selectedComponent = new Mirror(startPoint, new Point(e.getX(), e.getY()));
+                    components.add(selectedComponent);
                     removedComponents.clear();
                     startPoint = null;
+
+                    lineComponentPointLayoutX.setDisable(true);
+                    lineComponentPointLayoutY.setDisable(true);
                 }
             } else if (shape.isSelected()) {
+                selectedPoint = null;
                 Point selectedPoint = new Point(e.getX(), e.getY());
                 if (vertices.size() != 0 && selectedPoint.equals(vertices.get(0), 5)) {
-                    components.add(new Shape(1.5, vertices));
+                    selectedComponent = new Shape(1.5, vertices);
+                    components.add(selectedComponent);
                     removedComponents.clear();
                     vertices.clear();
+
+                    shapePointLayoutX.setDisable(true);
+                    shapePointLayoutY.setDisable(true);
                 } else {
                     vertices.add(selectedPoint);
                 }
@@ -412,6 +448,15 @@ public class PrimaryController {
             hoveredComponent = findMousedComponent(e);
             updateCanvas(e);
         });
+
+        canvas.setOnMouseDragged(e -> {
+            if (selectedPoint != null) {
+                selectedPoint.setX(e.getX());
+                selectedPoint.setY(e.getY());
+                selectedComponent.update();
+            }
+            updateCanvas(e);
+        });
     }
 
     // finding the clicked component
@@ -424,7 +469,7 @@ public class PrimaryController {
         Point mousedPoint = new Point(e.getX(), e.getY());
         for (Component component: components) {
             if (component instanceof Shape shape) {
-                if (shape.contains(mousedPoint)) {
+                if (shape.containsMouse(mousedPoint)) {
                     clickedComponents.add(component);
                 }
             } else if (component instanceof LineComponent lineComponent) {
@@ -498,24 +543,51 @@ public class PrimaryController {
     private Point findClickedPoint(MouseEvent e) {
         Point clickedPoint = new Point(e.getX(), e.getY());
         if (selectedComponent instanceof Shape shape) {
-            for (Point point: shape.getPoints()) {
-                if (point.equals(clickedPoint)) {
+            for (Point point: shape.getVertexes()) {
+                if (Point.distance(point, clickedPoint) < maxDistanceSelect) {
+                    shapePointLayoutX.setDisable(false);
+                    shapePointLayoutY.setDisable(false);
+                    lineComponentPointLayoutX.setDisable(true);
+                    lineComponentPointLayoutY.setDisable(true);
                     return point;
                 }
             }
         } else if (selectedComponent instanceof LineComponent lineComponent) {
-            if (lineComponent.getEdge().getStart().equals(clickedPoint)) {
-                return lineComponent.getEdge().getStart();
-            } else if (lineComponent.getEdge().getEnd().equals(clickedPoint)) {
-                return lineComponent.getEdge().getEnd();
+            Point point = null;
+            if (Point.distance(lineComponent.getEdge().getStart(), clickedPoint) < maxDistanceSelect) {
+                point = lineComponent.getEdge().getStart();
+            } else if (Point.distance(lineComponent.getEdge().getEnd(), clickedPoint) < maxDistanceSelect) {
+                point = lineComponent.getEdge().getEnd();
+            }
+
+            if (point != null) {
+                shapePointLayoutX.setDisable(true);
+                shapePointLayoutY.setDisable(true);
+                lineComponentPointLayoutX.setDisable(false);
+                lineComponentPointLayoutY.setDisable(false);
+                return point;
+            }
+        } else if (selectedComponent instanceof Source source) {
+            if (Point.distance(source.getBeam().getInitialRay().getStart(), clickedPoint) < maxDistanceSelect) {
+                shapePointLayoutX.setDisable(true);
+                shapePointLayoutY.setDisable(true);
+                lineComponentPointLayoutX.setDisable(true);
+                lineComponentPointLayoutY.setDisable(true);
+                return source.getBeam().getInitialRay().getStart();
             }
         }
 
+        shapePointLayoutX.setDisable(true);
+        shapePointLayoutY.setDisable(true);
+        lineComponentPointLayoutX.setDisable(true);
+        lineComponentPointLayoutY.setDisable(true);
         return null;
     }
 
     // drawing fully formed components
     private void updateCanvas() {
+        showInformation();
+
         for (Component component: components) {
             if (component instanceof Source source) {
                 source.getBeam().generateBeam(components);

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 public class Shape implements Component {
     private double refractiveIndex;
     private final ArrayList<Edge> edges;
-    private final ArrayList<Point> points;
+    private final ArrayList<Point> vertexes;
 
     private int layer;  // if shapes are stacked on each other, then this determines which one is clicked by the user
 
@@ -23,14 +23,14 @@ public class Shape implements Component {
             }
 
             ArrayList<Segment> segments = new ArrayList<>(this.edges);
-            this.points = Segment.segmentsToPoints(segments);
+            this.vertexes = Segment.segmentsToPoints(segments);
         } else if (objects.get(0) instanceof Point) {  // inputted as ArrayList<Point>
-            this.points = new ArrayList<>();
+            this.vertexes = new ArrayList<>();
             for (T object: objects) {
-                this.points.add((Point) object);
+                this.vertexes.add((Point) object);
             }
 
-            ArrayList<Segment> segments = Segment.pointsToSegments(this.points, true);
+            ArrayList<Segment> segments = Segment.pointsToSegments(this.vertexes, true);
             this.edges = new ArrayList<>();
             for (Segment segment: segments) {
                 this.edges.add(new Edge(segment, Edge.REFRACTOR));
@@ -40,7 +40,8 @@ public class Shape implements Component {
         }
     }
 
-    public void updateEdges() {
+    @Override
+    public void update() {
         for (Edge edge: edges) {
             edge.updateSegment();
         }
@@ -55,8 +56,8 @@ public class Shape implements Component {
         return edges;
     }
 
-    public ArrayList<Point> getPoints() {
-        return points;
+    public ArrayList<Point> getVertexes() {
+        return vertexes;
     }
 
     public void setRefractiveIndex(double refractiveIndex) {
@@ -79,6 +80,20 @@ public class Shape implements Component {
         return count % 2 == 1;
     }
 
+    public boolean containsMouse(Point point) {
+        if (contains(point)) {
+            return true;
+        }
+
+        for (Point vertex: vertexes) {
+            if (Point.distance(vertex, point) < 5) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public void setLayer(int layer) {
         this.layer = layer;
     }
@@ -90,18 +105,18 @@ public class Shape implements Component {
     @Override
     public LightRay interact(LightRay lightRay) {
         Edge intersectionEdge = intersectionEdge(lightRay);
-        boolean entering = true;  // whether the ray is entering the shape
-        for (Edge edge: edges) {
-            if (edge.containsPoint(lightRay.getStart())) {
-                entering = false;
-                break;
-            }
-        }
+        boolean entering = this != lightRay.getShape();  // whether the ray is entering the shape
+//        for (Edge edge: edges) {
+//            if (edge.containsIntersection(lightRay.getStart())) {
+//                entering = false;
+//                break;
+//            }
+//        }
 
         if (entering) {
-            return intersectionEdge.interact(lightRay, refractiveIndex);
+            return intersectionEdge.interact(lightRay, this, false);
         } else {
-            return intersectionEdge.interact(lightRay, 1);
+            return intersectionEdge.interact(lightRay, null, false);
         }
     }
 

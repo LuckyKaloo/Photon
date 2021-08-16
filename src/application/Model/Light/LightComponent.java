@@ -1,5 +1,14 @@
 package application.Model.Light;
 
+import application.Model.Components.Shape;
+
 public interface LightComponent {
-    double getRefractiveIndex();
+    default double getRefractiveIndex() {
+        if (getShape() == null) {
+            return 1;
+        } else {
+            return getShape().getRefractiveIndex();
+        }
+    }
+    Shape getShape();
 }

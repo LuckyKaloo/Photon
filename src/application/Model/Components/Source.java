@@ -8,11 +8,16 @@ public class Source implements Component {
     private final Beam beam;
 
     public Source(Point start) {
-        beam = new Beam(new LightRay(0, start, 1));
+        beam = new Beam(new LightRay(0, start, null));
     }
 
     public Beam getBeam() {
         return beam;
+    }
+
+    @Override
+    public void update() {
+        beam.getInitialRay().updateRay();
     }
 
     @Override

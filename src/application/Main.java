@@ -13,14 +13,13 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(getClass().getResource("View/primary.fxml")));
-        BorderPane pane = loader.load();
-        PrimaryController primaryController = loader.getController();
 
-        Scene scene = new Scene(pane);
+        Scene scene = new Scene(loader.load());
         stage.setScene(scene);
         stage.setMaximized(true);
         stage.show();
 
+        PrimaryController primaryController = loader.getController();
         primaryController.start();
     }
 

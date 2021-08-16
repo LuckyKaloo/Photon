@@ -1,27 +1,28 @@
 package application.Model.Light;
 
+import application.Model.Components.Shape;
 import application.Model.Geometry.Point;
 import application.Model.Geometry.Segment;
 
 public class LightSegment extends Segment implements LightComponent {
-    private final double refractiveIndex;
+    private final Shape shape;
 
-    public LightSegment(Point start, Point end, double refractiveIndex) {
+    public LightSegment(Point start, Point end, Shape shape) {
         super(start, end);
-        this.refractiveIndex = refractiveIndex;
+        this.shape = shape;
     }
 
     public LightSegment(LightRay lightRay, Point end) {
-        this(lightRay.getStart(), end, lightRay.getRefractiveIndex());
+        this(lightRay.getStart(), end, lightRay.getShape());
     }
 
     @Override
-    public double getRefractiveIndex() {
-        return refractiveIndex;
+    public Shape getShape() {
+        return shape;
     }
 
     @Override
     public String toString() {
-        return start + " " + end + " refractive index: " + refractiveIndex;
+        return start + " " + end + " refractive index: " + shape.getRefractiveIndex();
     }
 }

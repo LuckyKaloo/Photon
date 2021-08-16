@@ -1,28 +1,31 @@
 package application.Model.Light;
 
+import application.Model.Components.Shape;
 import application.Model.Geometry.Point;
 import application.Model.Geometry.Ray;
 
-public class LightRay extends Ray implements LightComponent {
-    private final double refractiveIndex;
+import java.util.ArrayList;
 
-    public LightRay(double angle, Point start, double refractiveIndex) {
+public class LightRay extends Ray implements LightComponent {
+    private final Shape shape;
+
+    public LightRay(double angle, Point start, Shape shape) {
         super(angle, start);
-        this.refractiveIndex = refractiveIndex;
+        this.shape = shape;
     }
 
-    public LightRay(Ray ray, double refractiveIndex) {
+    public LightRay(Ray ray, Shape shape) {
         super(ray);
-        this.refractiveIndex = refractiveIndex;
+        this.shape = shape;
     }
 
     @Override
-    public double getRefractiveIndex() {
-        return refractiveIndex;
+    public Shape getShape() {
+        return shape;
     }
 
     @Override
     public String toString() {
-        return start + " angle: " + angle + " refractive index: " + refractiveIndex;
+        return start + " angle: " + angle + " refractive index: " + shape.getRefractiveIndex();
     }
 }

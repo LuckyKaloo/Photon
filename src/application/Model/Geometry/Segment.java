@@ -59,6 +59,10 @@ public class Segment extends Ray {
 
     @Override
     public boolean containsIntersection(Point point) {
+        if (point == null) {
+            return false;
+        }
+
         // check if point is outside bounds of line on X-axis
         if (point.getX() < start.getX() && point.getX() < end.getX() ||
                 point.getX() > start.getX() && point.getX() > end.getX()) {

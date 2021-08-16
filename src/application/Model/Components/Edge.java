@@ -36,13 +36,13 @@ public class Edge extends Segment implements Serializable {
         if (type == ABSORBER) {
             return null;
         } else if (type == REFLECTOR) {
-            return interact(lightRay, 0);
+            return interact(lightRay, null, true);
         }
 
         throw new IllegalCallerException("Cannot call method with only ray for refractor!");
     }
 
-    public LightRay interact(LightRay lightRay, double endIndex) {
+    public LightRay interact(LightRay lightRay, Shape endShape, boolean reflect) {
         if (type == ABSORBER) {
             return null;
         }
@@ -60,12 +60,12 @@ public class Edge extends Segment implements Serializable {
         double normalisedAngle = Math.abs(initialAngle % 180);
         double angleIncidence = Math.abs(90 - normalisedAngle);
 
-        if (type == REFLECTOR || endIndex == 0 || lightRay.getRefractiveIndex() == 0) {
+        if (type == REFLECTOR || reflect || lightRay.getRefractiveIndex() == 0) {
             return reflect(initialAngle, normalisedAngle, angleIncidence,
-                    lightRay.getRefractiveIndex(), intersection);
+                    lightRay.getShape(), intersection);
         } else if (type == REFRACTOR) {
             return refract(initialAngle, normalisedAngle, angleIncidence,
-                    lightRay.getRefractiveIndex(), endIndex, intersection);
+                    lightRay.getShape(), endShape, intersection);
         }
 
         throw new IllegalStateException("Edge type is not valid!");
@@ -73,14 +73,17 @@ public class Edge extends Segment implements Serializable {
 
     // helper methods to return the relative angle of the outgoing ray to the edge
     private LightRay refract(double relativeInitialAngle, double normalisedAngle, double angleIncidence,
-                           double startIndex, double endIndex, Point intersection) {
+                           Shape startShape, Shape endShape, Point intersection) {
+
+        double startIndex = startShape == null ? 1 : startShape.getRefractiveIndex();
+        double endIndex = endShape == null ? 1 : endShape.getRefractiveIndex();
 
         double angleRefraction;
         if (endIndex == 0) {  // always reflection
             angleRefraction = 180;  // more than 90 -> goes into reflection case
         } else {  // n1 * sin(angle1) = n2 * sin(angle2)
-            angleRefraction = Math.toDegrees(Math.asin(
-                    Math.sin(Math.toRadians(angleIncidence)) * startIndex / endIndex));
+            angleRefraction = Math.toDegrees(Math.asin(Math.sin(Math.toRadians(angleIncidence)) *
+                    startIndex) / endIndex);
         }
 
         double relativeFinalAngle;
@@ -100,14 +103,14 @@ public class Edge extends Segment implements Serializable {
             }
 
             double finalAngle = (relativeFinalAngle + angle) % 360;
-            return new LightRay(finalAngle, intersection, endIndex);
+            return new LightRay(finalAngle, intersection, endShape);
         } else {  // total internal reflection
-            return reflect(relativeInitialAngle, normalisedAngle, angleIncidence, startIndex, intersection);
+            return reflect(relativeInitialAngle, normalisedAngle, angleIncidence, startShape, intersection);
         }
     }
 
     private LightRay reflect(double relativeInitialAngle, double normalisedAngle, double angleIncidence,
-                             double startIndex, Point intersection) {
+                             Shape startShape, Point intersection) {
 
         double relativeFinalAngle;
         if (relativeInitialAngle > 180) {
@@ -125,7 +128,7 @@ public class Edge extends Segment implements Serializable {
         }
         double finalAngle = (relativeFinalAngle + angle) % 360;
 
-        return new LightRay(finalAngle, intersection, startIndex);
+        return new LightRay(finalAngle, intersection, startShape);
     }
 
     public String getReference() {

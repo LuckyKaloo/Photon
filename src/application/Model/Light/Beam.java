@@ -12,12 +12,12 @@ public class Beam implements Serializable {
     private final ArrayList<LightComponent> lightComponents;
     private final Ray initialRay;
 
-    private Color color;
+    private SerializableColor color;
 
     public Beam(Ray initialRay) {
         this.lightComponents = new ArrayList<>();
         this.initialRay = initialRay;
-        this.color = Color.WHITE;
+        this.color = new SerializableColor(Color.WHITE);
     }
 
 
@@ -26,7 +26,7 @@ public class Beam implements Serializable {
     }
 
     public Color getColor() {
-        return color;
+        return color.getColor();
     }
 
     public ArrayList<LightComponent> getLightComponents() {
@@ -34,7 +34,7 @@ public class Beam implements Serializable {
     }
 
     public void setColor(Color color) {
-        this.color = color;
+        this.color = new SerializableColor(color);
     }
 
     public void generateBeam(ArrayList<Component> components) {
@@ -46,7 +46,7 @@ public class Beam implements Serializable {
             LightRay endRay;
 
             if (lightComponents.size() == 0) {
-                endRay = new LightRay(initialRay, 1);
+                endRay = new LightRay(initialRay, null);
             } else {
                 endRay = (LightRay) lightComponents.remove(lightComponents.size()-1);
                 if (endRay == null) {
