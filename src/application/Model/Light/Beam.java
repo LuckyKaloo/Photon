@@ -5,19 +5,18 @@ import application.Model.Geometry.Point;
 import application.Model.Geometry.Ray;
 import javafx.scene.paint.Color;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Beam implements Serializable {
+public class Beam {
     private final ArrayList<LightComponent> lightComponents;
     private final Ray initialRay;
 
-    private SerializableColor color;
+    private Color color;
 
     public Beam(Ray initialRay) {
         this.lightComponents = new ArrayList<>();
         this.initialRay = initialRay;
-        this.color = new SerializableColor(Color.WHITE);
+        this.color = Color.WHITE;
     }
 
 
@@ -26,7 +25,7 @@ public class Beam implements Serializable {
     }
 
     public Color getColor() {
-        return color.getColor();
+        return color;
     }
 
     public ArrayList<LightComponent> getLightComponents() {
@@ -34,7 +33,7 @@ public class Beam implements Serializable {
     }
 
     public void setColor(Color color) {
-        this.color = new SerializableColor(color);
+        this.color = color;
     }
 
     public void generateBeam(ArrayList<Component> components) {

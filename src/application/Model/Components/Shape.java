@@ -106,12 +106,6 @@ public class Shape implements Component {
     public LightRay interact(LightRay lightRay) {
         Edge intersectionEdge = intersectionEdge(lightRay);
         boolean entering = this != lightRay.getShape();  // whether the ray is entering the shape
-//        for (Edge edge: edges) {
-//            if (edge.containsIntersection(lightRay.getStart())) {
-//                entering = false;
-//                break;
-//            }
-//        }
 
         if (entering) {
             return intersectionEdge.interact(lightRay, this, false);
@@ -173,5 +167,18 @@ public class Shape implements Component {
     @Override
     public String toString() {
         return edges.toString();
+    }
+
+    @Override
+    public String toData() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Shape{\n");
+        stringBuilder.append("RefractiveIndex:").append(refractiveIndex).append("\n");
+        for (Point point: vertexes) {
+            stringBuilder.append(point.toData()).append("\n");
+        }
+        stringBuilder.append("}\n");
+
+        return stringBuilder.toString();
     }
 }

@@ -23,8 +23,14 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class PrimaryController {
     @FXML
@@ -143,16 +149,12 @@ public class PrimaryController {
     private void initialiseMenuBar() {
         MenuItem save = new MenuItem("Save");
         save.setOnAction(e -> {
-            File file = new File("testing.txt");
             try {
-                file.delete();
-                file.createNewFile();
-
-                ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
-                outputStream.writeObject(components);
-
-                outputStream.flush();
-                outputStream.close();
+                FileWriter fileWriter = new FileWriter("testing.txt");
+                for (Component component: components) {
+                    fileWriter.append(component.toData());
+                }
+                fileWriter.close();
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -161,14 +163,22 @@ public class PrimaryController {
 
         MenuItem load = new MenuItem("Load");
         load.setOnAction(e -> {
-            File file = new File("testing.txt");
+            components.clear();
+
             try {
-                ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file));
-                //noinspection unchecked
-                components = (ArrayList<Component>) inputStream.readObject();
-                updateCanvas();
-                inputStream.close();
-            } catch (IOException | ClassNotFoundException ex) {
+                String data = Files.readString(Paths.get("testing.txt"));
+                Pattern pattern = Pattern.compile(".*\\{([^}]|\\n)*}");
+                Matcher matcher = pattern.matcher(data);
+
+                while (matcher.find()) {
+                    try {
+                        components.add(Component.parseData(matcher.group()));
+                    } catch (IllegalArgumentException ex) {
+                        Alert alert = new Alert(Alert.AlertType.ERROR, ex.getMessage());
+                        alert.show();
+                    }
+                }
+            } catch (IOException ex) {
                 ex.printStackTrace();
             }
         });
@@ -400,7 +410,7 @@ public class PrimaryController {
                 if (startPoint == null) {
                     startPoint = new Point(e.getX(), e.getY());
                 } else {
-                    selectedComponent = new Absorber(startPoint, new Point(e.getX(), e.getY()));
+                    selectedComponent = new LineComponent(startPoint, new Point(e.getX(), e.getY()), Edge.ABSORBER);
                     components.add(selectedComponent);
                     removedComponents.clear();
                     startPoint = null;
@@ -413,7 +423,7 @@ public class PrimaryController {
                 if (startPoint == null) {
                     startPoint = new Point(e.getX(), e.getY());
                 } else {
-                    selectedComponent = new Mirror(startPoint, new Point(e.getX(), e.getY()));
+                    selectedComponent = new LineComponent(startPoint, new Point(e.getX(), e.getY()), Edge.REFLECTOR);
                     components.add(selectedComponent);
                     removedComponents.clear();
                     startPoint = null;
@@ -624,10 +634,12 @@ public class PrimaryController {
                     graphicsContext.setStroke(shapeColor);
                 } else if (component instanceof Source source) {
                     graphicsContext.setStroke(source.getBeam().getColor());
-                } else if (component instanceof Absorber) {
-                    graphicsContext.setStroke(absorberColor);
-                } else if (component instanceof Mirror) {
-                    graphicsContext.setStroke(mirrorColor);
+                } else if (component instanceof LineComponent lineComponent) {
+                    if (lineComponent.getEdge().getType() == Edge.ABSORBER) {
+                        graphicsContext.setStroke(absorberColor);
+                    } else if (lineComponent.getEdge().getType() == Edge.REFLECTOR) {
+                        graphicsContext.setStroke(mirrorColor);
+                    }
                 }
             }
 

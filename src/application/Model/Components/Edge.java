@@ -4,9 +4,7 @@ import application.Model.Geometry.Point;
 import application.Model.Geometry.Segment;
 import application.Model.Light.LightRay;
 
-import java.io.Serializable;
-
-public class Edge extends Segment implements Serializable {
+public class Edge extends Segment {
     public final static int REFLECTOR = 0;
     public final static int REFRACTOR = 1;
     public final static int ABSORBER = 2;
@@ -30,6 +28,10 @@ public class Edge extends Segment implements Serializable {
         } else {
             throw new IllegalArgumentException("Invalid type for edge!");
         }
+    }
+
+    public int getType() {
+        return type;
     }
 
     public LightRay interact(LightRay lightRay) {

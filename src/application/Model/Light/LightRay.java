@@ -4,8 +4,6 @@ import application.Model.Components.Shape;
 import application.Model.Geometry.Point;
 import application.Model.Geometry.Ray;
 
-import java.util.ArrayList;
-
 public class LightRay extends Ray implements LightComponent {
     private final Shape shape;
 

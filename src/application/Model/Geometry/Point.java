@@ -1,8 +1,8 @@
 package application.Model.Geometry;
 
-import java.io.Serializable;
+import java.util.regex.Pattern;
 
-public final class Point implements Serializable {
+public final class Point {
     private double x;
     private double y;
 
@@ -64,5 +64,22 @@ public final class Point implements Serializable {
 
     public void setY(double y) {
         this.y = y;
+    }
+
+    public String toData() {
+        return "Point:(" + x + "," + y + ")";
+    }
+
+    public static Point parseData(String data) {
+        if (!Pattern.matches("Point:.*", data)) {
+            throw new IllegalArgumentException("Data for point is not valid!");
+        } else {
+            String[] coordinates = data.substring(6).replaceAll("[()]", "").split(",");
+            try {
+                return new Point(Double.parseDouble(coordinates[0]), Double.parseDouble(coordinates[1]));
+            } catch (NumberFormatException ex) {
+                throw new IllegalArgumentException("Data for point is not valid!");
+            }
+        }
     }
 }
