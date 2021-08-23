@@ -40,12 +40,12 @@ public class LineComponent implements Component {
     public String toData() {
         StringBuilder stringBuilder = new StringBuilder();
         if (type == Edge.REFLECTOR) {
-            stringBuilder.append("Mirror{\n");
+            stringBuilder.append("Mirror {\n");
         } else if (type == Edge.ABSORBER) {
-            stringBuilder.append("Absorber{\n");
+            stringBuilder.append("Absorber {\n");
         }
-        stringBuilder.append(edge.getStart().toData()).append("\n");
-        stringBuilder.append(edge.getEnd().toData()).append("\n");
+        stringBuilder.append("\t").append(edge.getStart().toData()).append("\n");
+        stringBuilder.append("\t").append(edge.getEnd().toData()).append("\n");
         stringBuilder.append("}\n");
 
         return stringBuilder.toString();

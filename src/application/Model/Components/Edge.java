@@ -3,6 +3,7 @@ package application.Model.Components;
 import application.Model.Geometry.Point;
 import application.Model.Geometry.Segment;
 import application.Model.Light.LightRay;
+import application.Model.Light.Normal;
 
 public class Edge extends Segment {
     public final static int REFLECTOR = 0;
@@ -105,7 +106,8 @@ public class Edge extends Segment {
             }
 
             double finalAngle = (relativeFinalAngle + angle) % 360;
-            return new LightRay(finalAngle, intersection, endShape);
+            return new LightRay(finalAngle, intersection, endShape,
+                    new Normal(this, intersection, angleIncidence, angleRefraction));
         } else {  // total internal reflection
             return reflect(relativeInitialAngle, normalisedAngle, angleIncidence, startShape, intersection);
         }
@@ -130,7 +132,8 @@ public class Edge extends Segment {
         }
         double finalAngle = (relativeFinalAngle + angle) % 360;
 
-        return new LightRay(finalAngle, intersection, startShape);
+        return new LightRay(finalAngle, intersection, startShape,
+                new Normal(this, intersection, angleIncidence, angleIncidence));
     }
 
     public String getReference() {

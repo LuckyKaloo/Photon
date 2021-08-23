@@ -67,7 +67,7 @@ public final class Point {
     }
 
     public String toData() {
-        return "Point:(" + x + "," + y + ")";
+        return "Point: (" + x + "," + y + ")";
     }
 
     public static Point parseData(String data) {

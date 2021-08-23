@@ -10,5 +10,8 @@ public interface LightComponent {
             return getShape().getRefractiveIndex();
         }
     }
+
     Shape getShape();
+
+    Normal getNormal();
 }

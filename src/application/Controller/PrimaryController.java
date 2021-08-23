@@ -7,6 +7,7 @@ import application.Model.Geometry.Segment;
 import application.Model.Light.LightComponent;
 import application.Model.Light.LightRay;
 import application.Model.Light.LightSegment;
+import application.Model.Light.Normal;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
@@ -19,18 +20,18 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
-
 import javafx.scene.paint.Color;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 public class PrimaryController {
     @FXML
@@ -91,9 +92,11 @@ public class PrimaryController {
     private Component hoveredComponent;  // the component that the user is hovering over
     private Component selectedComponent;  // the component that the user has selected
     private Point selectedPoint;  // the point that the user has selected
+    private boolean rotating = false; // whether the user is rotating a component using rotate wheel on the canvas
 
 
     private final static int maxDistanceSelect = 6;
+    private final static int normalWidth = 5;
 
     // colors
     private final static Color backgroundColor = Color.rgb(2, 6, 12);
@@ -102,11 +105,15 @@ public class PrimaryController {
     private final static Color mirrorColor = Color.rgb(70, 141, 246);
 
     private final static Color shapeDrawingColor = Color.rgb(239, 84, 84);
+    private final static Color normalColor = shapeColor;
 
     private final static Color selectedColor = Color.WHITE;
     private final static Color hoveredColor = Color.rgb(210, 210, 210);
 
 
+    // start method to initialize everything and start the editor
+    // cannot use initialize method because the panes are not set to the correct size yet
+    // need to wait for the FXML file to be loaded
     public void start() {
         graphicsContext = canvas.getGraphicsContext2D();
         graphicsContext.setLineWidth(1.3);
@@ -116,7 +123,7 @@ public class PrimaryController {
         // initialising canvas
         canvas.heightProperty().bind(pane.heightProperty());
         canvas.widthProperty().bind(pane.widthProperty());
-        canvas.setScaleY(-1);
+        canvas.setScaleY(-1);  // flips the canvas so that 0,0 starts from the bottom :)
 
 
         // initialising buttons
@@ -150,7 +157,7 @@ public class PrimaryController {
         MenuItem save = new MenuItem("Save");
         save.setOnAction(e -> {
             try {
-                FileWriter fileWriter = new FileWriter("testing.txt");
+                FileWriter fileWriter = new FileWriter("testing.phn");
                 for (Component component: components) {
                     fileWriter.append(component.toData());
                 }
@@ -166,7 +173,7 @@ public class PrimaryController {
             components.clear();
 
             try {
-                String data = Files.readString(Paths.get("testing.txt"));
+                String data = Files.readString(Paths.get("testing.phn"));
                 Pattern pattern = Pattern.compile(".*\\{([^}]|\\n)*}");
                 Matcher matcher = pattern.matcher(data);
 
@@ -448,6 +455,13 @@ public class PrimaryController {
             } else {
                 selectedComponent = findMousedComponent(e);
                 selectedPoint = findClickedPoint(e);
+
+                if (selectedComponent instanceof Source) {
+                    // user selected the start point of the source
+                    if (selectedPoint != null) {
+                        rotating = true;
+                    }
+                }
                 showInformation();
             }
 
@@ -469,7 +483,7 @@ public class PrimaryController {
         });
     }
 
-    // finding the clicked component
+    // finding the clicked or hovered component
     private Component findMousedComponent(MouseEvent e) {
         Component mousedComponent = null;
         ArrayList<Component> clickedComponents = new ArrayList<>();
@@ -513,9 +527,10 @@ public class PrimaryController {
         }
 
         switch (highest) {
-            case 0 -> {
+            case 0 -> {  // component is a shape
                 int highestLayer = -1;
                 for (Component component: clickedComponents) {
+                    // finding the shape with the highest layer
                     if (component instanceof Shape shape) {
                         if (shape.getLayer() > highestLayer) {
                             mousedComponent = shape;
@@ -524,8 +539,9 @@ public class PrimaryController {
                     }
                 }
             }
-            case 1 -> {
+            case 1 -> {  // component is a line component
                 double minDistance = 0;
+                // finding the closest line component to the mouse
                 for (Component component: clickedComponents) {
                     if (component instanceof LineComponent) {
                         if (minDistance == 0 || distances.get(component) < minDistance) {
@@ -534,9 +550,10 @@ public class PrimaryController {
                         }
                     }
                 }
-            } case 2 -> {
+            } case 2 -> {  // component is a source
                 double minDistance = 0;
                 for (Component component: clickedComponents) {
+                    // finding the closest source to the mouse
                     if (component instanceof Source) {
                         if (minDistance == 0 || distances.get(component) < minDistance) {
                             mousedComponent = component;
@@ -608,6 +625,7 @@ public class PrimaryController {
         graphicsContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
         for (Component component: components) {  // draw components
+            // drawing the shape of the component
             graphicsContext.beginPath();
             if (component instanceof Shape shape) {
                 for (Edge edge: shape.getEdges()) {
@@ -625,6 +643,7 @@ public class PrimaryController {
                 }
             }
 
+            // setting the color of the component to be drawn
             if (component == selectedComponent) {
                 graphicsContext.setStroke(selectedColor);
             } else if (component == hoveredComponent){
@@ -645,6 +664,22 @@ public class PrimaryController {
 
             graphicsContext.stroke();
             graphicsContext.closePath();
+
+            // drawing the normals if the component is a source
+            if (component instanceof Source source) {
+                graphicsContext.setStroke(normalColor);
+                graphicsContext.setLineDashes(2);
+                for (LightComponent lightComponent: source.getBeam().getLightComponents()) {
+                    Normal normal = lightComponent.getNormal();
+                    if (normal != null) {
+                        graphicsContext.beginPath();
+                        drawNormal(normal.edge(), normal.intersection());
+                        graphicsContext.stroke();
+                    }
+                }
+                graphicsContext.closePath();
+                graphicsContext.setLineDashes(0);
+            }
         }
     }
 
@@ -652,6 +687,7 @@ public class PrimaryController {
     private void updateCanvas(MouseEvent e) {
         updateCanvas();
 
+        // if a component is being drawn, shows the component before it is confirmed
         graphicsContext.beginPath();
         Point newPoint = new Point(e.getX(), e.getY());
         if (absorber.isSelected() && startPoint != null) {
@@ -700,6 +736,18 @@ public class PrimaryController {
         graphicsContext.moveTo(ray.getStart().getX(), ray.getStart().getY());
         double endX = ray.getStart().getX() + 2000 * Math.cos(Math.toRadians(ray.getAngle()));
         double endY = ray.getStart().getY() + 2000 * Math.sin(Math.toRadians(ray.getAngle()));
+        graphicsContext.lineTo(endX, endY);
+    }
+
+    private void drawNormal(Segment edge, Point intersection) {
+        // the coordinates of the start and end points of the normal displayed
+        double startX = intersection.getX() + normalWidth * Math.cos(Math.toRadians(edge.getAngle() + 90));
+        double startY = intersection.getY() + normalWidth * Math.sin(Math.toRadians(edge.getAngle() + 90));
+        double endX = intersection.getX() - normalWidth * Math.cos(Math.toRadians(edge.getAngle() + 90));
+        double endY = intersection.getY() - normalWidth * Math.sin(Math.toRadians(edge.getAngle() + 90));
+
+        // drawing a dashed line to represent the normal
+        graphicsContext.moveTo(startX, startY);
         graphicsContext.lineTo(endX, endY);
     }
 }

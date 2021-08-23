@@ -6,19 +6,22 @@ import application.Model.Geometry.Segment;
 
 public class LightSegment extends Segment implements LightComponent {
     private final Shape shape;
-
-    public LightSegment(Point start, Point end, Shape shape) {
-        super(start, end);
-        this.shape = shape;
-    }
+    private final Normal normal;  // the normal at the light segment's start
 
     public LightSegment(LightRay lightRay, Point end) {
-        this(lightRay.getStart(), end, lightRay.getShape());
+        super(lightRay.getStart(), end);
+        this.shape = lightRay.getShape();
+        this.normal = lightRay.getNormal();
     }
 
     @Override
     public Shape getShape() {
         return shape;
+    }
+
+    @Override
+    public Normal getNormal() {
+        return normal;
     }
 
     @Override

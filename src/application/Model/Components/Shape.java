@@ -172,10 +172,10 @@ public class Shape implements Component {
     @Override
     public String toData() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("Shape{\n");
-        stringBuilder.append("RefractiveIndex:").append(refractiveIndex).append("\n");
+        stringBuilder.append("Shape {\n");
+        stringBuilder.append("\tRefractive Index: ").append(refractiveIndex).append("\n");
         for (Point point: vertexes) {
-            stringBuilder.append(point.toData()).append("\n");
+            stringBuilder.append("\t").append(point.toData()).append("\n");
         }
         stringBuilder.append("}\n");
 

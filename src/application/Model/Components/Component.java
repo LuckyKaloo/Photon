@@ -16,7 +16,7 @@ public interface Component {
 
     static Component parseData(String data) throws IllegalArgumentException {  // parses data from the toData() method into a component object
         // cleans up the data for easier parsing of it
-        data.replaceAll("[\\s^\\n]", "");
+        data = data.replaceAll("[ \\t\\r\\f]", "");
         String[] lines = data.split("\n");
 
         switch (lines[0]) {
