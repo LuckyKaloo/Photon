@@ -13,7 +13,7 @@ public class Beam {
 
     private Color color;
 
-    private ArrayList<Normal> normals;  // list of all the normals that the light beam encounters
+    private final ArrayList<Normal> normals;  // list of all the normals that the light beam encounters
 
     public Beam(Ray initialRay) {
         this.lightComponents = new ArrayList<>();
@@ -51,7 +51,7 @@ public class Beam {
             if (lightComponents.size() == 0) {
                 endRay = new LightRay(initialRay, null, null);
             } else {
-                endRay = (LightRay) lightComponents.remove(lightComponents.size()-1);
+                endRay = (LightRay) lightComponents.remove(lightComponents.size() - 1);
                 if (endRay == null) {
                     break;
                 }

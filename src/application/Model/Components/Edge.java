@@ -76,7 +76,7 @@ public class Edge extends Segment {
 
     // helper methods to return the relative angle of the outgoing ray to the edge
     private LightRay refract(double relativeInitialAngle, double normalisedAngle, double angleIncidence,
-                           Shape startShape, Shape endShape, Point intersection) {
+                             Shape startShape, Shape endShape, Point intersection) {
 
         double startIndex = startShape == null ? 1 : startShape.getRefractiveIndex();
         double endIndex = endShape == null ? 1 : endShape.getRefractiveIndex();

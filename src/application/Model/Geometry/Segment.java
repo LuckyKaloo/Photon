@@ -103,8 +103,8 @@ public class Segment extends Ray {
 
     public static ArrayList<Segment> pointsToSegments(ArrayList<Point> points, boolean joinStartAndEnd) {
         ArrayList<Segment> segments = new ArrayList<>();
-        for (int i = 0; i < points.size()-1; i++) {
-            segments.add(new Segment(points.get(i), points.get(i+1)));
+        for (int i = 0; i < points.size() - 1; i++) {
+            segments.add(new Segment(points.get(i), points.get(i + 1)));
         }
         if (joinStartAndEnd) {
             segments.add(new Segment(points.get(0), points.get(points.size() - 1)));
@@ -117,8 +117,8 @@ public class Segment extends Ray {
         ArrayList<Point> points = new ArrayList<>();
         points.add(segments.get(0).start);
         points.add(segments.get(0).end);
-        for (int i = 1; i < segments.size()-1; i++) {
-            if (segments.get(i).start.equals(points.get(points.size()-1))) {
+        for (int i = 1; i < segments.size() - 1; i++) {
+            if (segments.get(i).start.equals(points.get(points.size() - 1))) {
                 points.add(segments.get(i).end);
             } else {
                 throw new IllegalArgumentException("Segments must form a closed loop in order!");
@@ -126,5 +126,11 @@ public class Segment extends Ray {
         }
 
         return points;
+    }
+
+    public Point midpoint() {
+        double x = (start.getX() + end.getX()) / 2;
+        double y = (start.getY() + end.getY()) / 2;
+        return new Point(x, y);
     }
 }

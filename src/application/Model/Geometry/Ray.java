@@ -7,7 +7,8 @@ public class Ray {
     protected double gradient;
     protected double yIntercept;
 
-    Ray() {}
+    Ray() {
+    }
 
     public Ray(double angle, Point start) {
         this.angle = angle % 360;
@@ -95,6 +96,26 @@ public class Ray {
         } else return !(angle > 180) || !(point.getY() > start.getY());
     }
 
+    public static double angleTo(Point start, Point end) {
+        if (start.equals(end)) {
+            throw new IllegalArgumentException("Points are the same, cannot calculate angle between them");
+        }
+
+        if (start.getX() == end.getX()) {
+            if (start.getY() < end.getY()) {
+                return 90;
+            } else {
+                return 270;
+            }
+        }
+
+        double basicAngle = Math.toDegrees(Math.atan((end.getY() - start.getY()) / (end.getX() - start.getX())));
+        if (end.getX() > start.getX()) {  // quadrant 1 or 4
+            return basicAngle;
+        } else {  // quadrant 2 or 3
+            return 180 + basicAngle;
+        }
+    }
 
     @Override
     public String toString() {

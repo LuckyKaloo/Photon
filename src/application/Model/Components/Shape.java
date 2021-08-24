@@ -18,7 +18,7 @@ public class Shape implements Component {
         this.refractiveIndex = refractiveIndex;
         if (objects.get(0) instanceof Edge) {  // inputted as ArrayList<Edge>
             this.edges = new ArrayList<>();
-            for (T object: objects) {
+            for (T object : objects) {
                 this.edges.add((Edge) object);
             }
 
@@ -26,13 +26,13 @@ public class Shape implements Component {
             this.vertexes = Segment.segmentsToPoints(segments);
         } else if (objects.get(0) instanceof Point) {  // inputted as ArrayList<Point>
             this.vertexes = new ArrayList<>();
-            for (T object: objects) {
+            for (T object : objects) {
                 this.vertexes.add((Point) object);
             }
 
             ArrayList<Segment> segments = Segment.pointsToSegments(this.vertexes, true);
             this.edges = new ArrayList<>();
-            for (Segment segment: segments) {
+            for (Segment segment : segments) {
                 this.edges.add(new Edge(segment, Edge.REFRACTOR));
             }
         } else {
@@ -42,7 +42,7 @@ public class Shape implements Component {
 
     @Override
     public void update() {
-        for (Edge edge: edges) {
+        for (Edge edge : edges) {
             edge.updateSegment();
         }
     }
@@ -71,7 +71,7 @@ public class Shape implements Component {
     public boolean contains(Point point) {
         Ray ray = new Ray(0, point);
         int count = 0;
-        for (Edge edge: edges) {
+        for (Edge edge : edges) {
             if (edge.intersection(ray) != null) {
                 count++;
             }
@@ -85,7 +85,7 @@ public class Shape implements Component {
             return true;
         }
 
-        for (Point vertex: vertexes) {
+        for (Point vertex : vertexes) {
             if (Point.distance(vertex, point) < 5) {
                 return true;
             }
@@ -174,7 +174,7 @@ public class Shape implements Component {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Shape {\n");
         stringBuilder.append("\tRefractive Index: ").append(refractiveIndex).append("\n");
-        for (Point point: vertexes) {
+        for (Point point : vertexes) {
             stringBuilder.append("\t").append(point.toData()).append("\n");
         }
         stringBuilder.append("}\n");

@@ -33,7 +33,7 @@ public interface Component {
                     ArrayList<Point> points = new ArrayList<>();
                     double refractiveIndex = Double.parseDouble(lines[1].substring(16));
 
-                    for (int i = 2; i < lines.length-1; i++) {
+                    for (int i = 2; i < lines.length - 1; i++) {
                         points.add(Point.parseData(lines[i]));
                     }
 
