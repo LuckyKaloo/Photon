@@ -22,7 +22,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.ArcType;
-import javafx.scene.shape.Line;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -49,9 +48,9 @@ public class PrimaryController {
     @FXML
     private ToggleButton mirror;
     @FXML
-    private Pane pane;
-    @FXML
     private Canvas canvas;
+    @FXML
+    private ScrollPane scrollPane;
 
     // information panel
     @FXML
@@ -85,8 +84,9 @@ public class PrimaryController {
 
     // non FXML stuff
     private GraphicsContext graphicsContext;
-    private ArrayList<Component> components;
-    private ArrayList<Component> removedComponents;
+    private final ArrayList<Component> components = new ArrayList<>();
+    private final ArrayList<Component> removedComponents = new ArrayList<>();
+    private boolean componentsModified = false;  // whether a component has been modified -> if has been modified then need to recalculate the beam
 
     private Point startPoint;  // if user selected mirror or absorber, this is the first point of the component (line)
     private final ArrayList<Point> vertices = new ArrayList<>();  // if user selected shape, more than 1 point will be used
@@ -94,10 +94,16 @@ public class PrimaryController {
     private Component hoveredComponent;  // the component that the user is hovering over
     private Component selectedComponent;  // the component that the user has selected
     private Point selectedPoint;  // the point that the user has selected
+
     private boolean rotating = false;  // whether the user is rotating a component using rotate wheel on the canvas
-    private boolean rotatable = false;  // whether a component is able to be rotated now
+    private boolean rotatable = false;  // whether a component can be rotated now
     private Point rotatePoint;
     private double rotateAngle;  // if the user is rotating a component, the initial angle that they started at
+
+    private boolean translating = false;
+    private Point translatePoint;
+
+    private boolean zooming = false;  // whether the user is using the mouse wheel to zoom in and out of the canvas
 
 
     private final static int maxDistanceSelect = 6;
@@ -123,14 +129,15 @@ public class PrimaryController {
     public void start() {
         graphicsContext = canvas.getGraphicsContext2D();
         graphicsContext.setLineWidth(1);
-        components = new ArrayList<>();
-        removedComponents = new ArrayList<>();
 
         // initialising canvas
-        canvas.heightProperty().bind(pane.heightProperty());
-        canvas.widthProperty().bind(pane.widthProperty());
+        canvas.setHeight(2000);
+        canvas.setWidth(5000);
         canvas.setScaleY(-1);  // flips the canvas so that 0,0 starts from the bottom :)
 
+
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
         // initialising buttons
         ToggleGroup group = new ToggleGroup();
@@ -195,6 +202,8 @@ public class PrimaryController {
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
+
+            componentsModified = true;
         });
         menuBar.getMenus().get(0).getItems().add(load);
     }
@@ -388,12 +397,14 @@ public class PrimaryController {
                 case Z -> {
                     if (components.size() > 0) {
                         removedComponents.add(components.remove(components.size() - 1));
+                        componentsModified = true;
                         updateCanvas();
                     }
                 }
                 case Y -> {
                     if (removedComponents.size() > 0) {
                         components.add(removedComponents.remove(removedComponents.size() - 1));
+                        componentsModified = true;
                         updateCanvas();
                     }
                 }
@@ -403,9 +414,19 @@ public class PrimaryController {
                         selectedComponent = null;
                         rotatable = false;
                         rotating = false;
+                        componentsModified = true;
                         updateCanvas();
                     }
                 }
+                case SHIFT -> scrollPane.setPannable(true);
+                case CONTROL -> zooming = true;
+            }
+        });
+
+        borderPane.setOnKeyReleased(e -> {
+            switch (e.getCode()) {
+                case SHIFT -> scrollPane.setPannable(false);
+                case CONTROL -> zooming = false;
             }
         });
     }
@@ -424,6 +445,7 @@ public class PrimaryController {
 
                 rotatable = false;
                 rotating = false;
+                componentsModified = true;
             } else if (mirror.isSelected() || absorber.isSelected()) {
                 selectedPoint = null;
                 if (startPoint == null) {
@@ -443,6 +465,7 @@ public class PrimaryController {
 
                     rotatable = false;
                     rotating = false;
+                    componentsModified = true;
                 }
             } else if (shape.isSelected()) {
                 selectedPoint = null;
@@ -455,6 +478,8 @@ public class PrimaryController {
 
                     shapePointLayoutX.setDisable(true);
                     shapePointLayoutY.setDisable(true);
+
+                    componentsModified = true;
                 } else {
                     vertices.add(selectedPoint);
                 }
@@ -480,6 +505,7 @@ public class PrimaryController {
                                 throw new IllegalStateException("Rotating but selected component is not a source or line component");
                             }
                             rotating = true;
+                            componentsModified = true;
                         }
                     } else {
                         rotatable = false;
@@ -518,6 +544,7 @@ public class PrimaryController {
                 selectedPoint.setX(e.getX());
                 selectedPoint.setY(e.getY());
                 selectedComponent.update();
+                componentsModified = true;
             } else if (rotating) {
                 // change the angle of the selected component relative to where the user's start angle was
                 double changeAngle = Ray.angleTo(rotatePoint, new Point(e.getX(), e.getY()));
@@ -530,6 +557,7 @@ public class PrimaryController {
                 } else {
                     throw new IllegalStateException("Rotating a component that is not a source or line component");
                 }
+                componentsModified = true;
             }
             updateCanvas(e);
         });
@@ -671,10 +699,13 @@ public class PrimaryController {
     private void updateCanvas() {
         showInformation();
 
-        for (Component component : components) {
-            if (component instanceof Source source) {
-                source.getBeam().generateBeam(components);
+        if (componentsModified) {
+            for (Component component : components) {
+                if (component instanceof Source source) {
+                    source.getBeam().generateBeam(components);
+                }
             }
+            componentsModified = false;
         }
 
         graphicsContext.setFill(backgroundColor);

@@ -43,7 +43,9 @@ public class Beam {
     public void generateBeam(ArrayList<Component> components) {
         lightComponents.clear();
 
-        while (true) {
+        // only goes to 1000 to prevent the program from crashing if there are infinite loops
+        // eg. mirror parallel to a mirror which is perpendicular to a source between them -> infinite reflections
+        for (int i = 0; i < 1000; i++) {
             ArrayList<Point> intersections = new ArrayList<>();
             ArrayList<Integer> componentIndexes = new ArrayList<>();
             LightRay endRay;
@@ -53,32 +55,32 @@ public class Beam {
             } else {
                 endRay = (LightRay) lightComponents.remove(lightComponents.size() - 1);
                 if (endRay == null) {
-                    break;
+                    return;
                 }
             }
 
-            for (int i = 0; i < components.size(); i++) {
-                Component component = components.get(i);
+            for (int j = 0; j < components.size(); j++) {
+                Component component = components.get(j);
                 Point intersection = component.intersection(endRay);
 
                 if (intersection != null && !intersection.equals(endRay.getStart())) {
                     intersections.add(intersection);  // intersections that the ray makes with all components
-                    componentIndexes.add(i);  // index of the component that got intersected;
+                    componentIndexes.add(j);  // index of the component that got intersected;
                 }
             }
 
             if (intersections.size() == 0) {  // no intersections
                 lightComponents.add(endRay);
-                break;
+                return;
             } else {
                 // get the component that the ray will interact with first
                 double minDistance = Point.distance(endRay.getStart(), intersections.get(0));
                 int index = 0;
-                for (int i = 1; i < intersections.size(); i++) {
-                    double distance = Point.distance(endRay.getStart(), intersections.get(i));
+                for (int j = 1; j < intersections.size(); j++) {
+                    double distance = Point.distance(endRay.getStart(), intersections.get(j));
                     if (distance < minDistance) {
                         minDistance = distance;
-                        index = i;
+                        index = j;
                     }
                 }
 
@@ -90,6 +92,8 @@ public class Beam {
                 lightComponents.add(newRay);
             }
         }
+
+        lightComponents.remove(lightComponents.size()-1);
     }
 
 

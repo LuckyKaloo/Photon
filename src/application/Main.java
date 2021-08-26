@@ -14,6 +14,7 @@ public class Main extends Application {
         FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(getClass().getResource("View/primary.fxml")));
 
         Scene scene = new Scene(loader.load());
+        stage.setTitle("Photon");
         stage.setScene(scene);
         stage.setMaximized(true);
         stage.show();
