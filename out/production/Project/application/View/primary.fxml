@@ -44,11 +44,9 @@
         </VBox>
     </left>
     <center>
-      <ScrollPane fx:id="scrollPane">
-         <content>
-               <Canvas fx:id="canvas" height="375.0" width="400.0" />
-         </content>
-      </ScrollPane>
+        <ScrollPane fx:id="scrollPane">
+            <Canvas fx:id="canvas" height="375.0" width="400.0"/>
+        </ScrollPane>
     </center>
     <right>
         <Pane fx:id="information" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="TOP_LEFT">

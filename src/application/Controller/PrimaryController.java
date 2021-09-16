@@ -22,15 +22,15 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.ArcType;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -100,11 +100,6 @@ public class PrimaryController {
     private Point rotatePoint;
     private double rotateAngle;  // if the user is rotating a component, the initial angle that they started at
 
-    private boolean translating = false;
-    private Point translatePoint;
-
-    private boolean zooming = false;  // whether the user is using the mouse wheel to zoom in and out of the canvas
-
 
     private final static int maxDistanceSelect = 6;
     private final static int normalWidth = 5;
@@ -131,9 +126,9 @@ public class PrimaryController {
         graphicsContext.setLineWidth(1);
 
         // initialising canvas
-        canvas.setHeight(2000);
-        canvas.setWidth(5000);
-        canvas.setScaleY(-1);  // flips the canvas so that 0,0 starts from the bottom :)
+        canvas.heightProperty().set(4000);  // maximum is 8192
+        canvas.widthProperty().set(4000);
+        canvas.scaleYProperty().set(-1);  // flips the canvas so that 0,0 starts from the bottom :)
 
 
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
@@ -151,8 +146,7 @@ public class PrimaryController {
             absorber.setGraphic(new ImageView(new Image(new FileInputStream("Resources/images/Absorber.png"), 80, 80, false, false)));
             mirror.setGraphic(new ImageView(new Image(new FileInputStream("Resources/images/Mirror.png"), 80, 80, false, false)));
             shape.setGraphic(new ImageView(new Image(new FileInputStream("Resources/images/Shape.png"), 80, 80, false, false)));
-        } catch (FileNotFoundException ignored) {
-        }
+        } catch (FileNotFoundException ignored) {}
 
         // initialisation methods
         initialiseKeyboardShortcuts();
@@ -172,6 +166,8 @@ public class PrimaryController {
         save.setOnAction(e -> {
             try {
                 FileWriter fileWriter = new FileWriter("testing.phn");
+                fileWriter.append("Canvas {\nWidth: ").append(String.valueOf(canvas.getWidth()))
+                        .append("\nHeight: ").append(String.valueOf(canvas.getHeight())).append("\n}");
                 for (Component component : components) {
                     fileWriter.append(component.toData());
                 }
@@ -184,23 +180,47 @@ public class PrimaryController {
 
         MenuItem load = new MenuItem("Load");
         load.setOnAction(e -> {
-            components.clear();
+            FileChooser fileChooser = new FileChooser();
+            Stage stage = new Stage();
+            fileChooser.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("Photon Files", "*.phn"));
+            File selectedFile = fileChooser.showOpenDialog(stage);
 
-            try {
-                String data = Files.readString(Paths.get("testing.phn"));
-                Pattern pattern = Pattern.compile(".*\\{([^}]|\\n)*}");
-                Matcher matcher = pattern.matcher(data);
+            if (selectedFile != null) {
+                components.clear();
 
-                while (matcher.find()) {
-                    try {
-                        components.add(Component.parseData(matcher.group()));
-                    } catch (IllegalArgumentException ex) {
-                        Alert alert = new Alert(Alert.AlertType.ERROR, ex.getMessage());
-                        alert.show();
+                try {
+                    String data = Files.readString(Paths.get(selectedFile.toURI()));
+                    Pattern pattern = Pattern.compile(".*\\{([^}]|\\n)*}");
+                    Matcher matcher = pattern.matcher(data);
+
+                    while (matcher.find()) {
+                        try {
+                            String line = matcher.group().replaceAll("[ \\t\\r\\f]", "");
+                            String[] lines = line.split("\n");
+                            if (lines[0].equals("Canvas{")) {
+                                if (!Pattern.matches("Width:.*", lines[1]) || !Pattern.matches("Height:.*", lines[2])) {
+                                    throw new IllegalArgumentException("Data for canvas is not valid!");
+                                }
+
+                                try {
+                                    canvas.setWidth(Double.parseDouble(lines[1].substring(6)));
+                                    canvas.setHeight(Double.parseDouble(lines[2].substring(7)));
+                                } catch (NumberFormatException ex) {
+                                    Alert alert = new Alert(Alert.AlertType.ERROR, "Data for canvas is not valid!");
+                                    alert.show();
+                                }
+                            } else {
+                                components.add(Component.parseData(matcher.group()));
+                            }
+                        } catch (IllegalArgumentException ex) {
+                            Alert alert = new Alert(Alert.AlertType.ERROR, ex.getMessage());
+                            alert.show();
+                        }
                     }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
                 }
-            } catch (IOException ex) {
-                ex.printStackTrace();
             }
 
             componentsModified = true;
@@ -250,138 +270,101 @@ public class PrimaryController {
     }
 
     private void initializeInformationPanel() {
-        // shape information
-        shapePointLayoutX.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) {
-                try {
-                    if (selectedComponent instanceof Shape shape) {
-                        selectedPoint.setX(Double.parseDouble(shapePointLayoutX.getText()));
-                        shape.update();
-                        updateCanvas();
-                    }
-                } catch (NumberFormatException ex) {
-                    ex.printStackTrace();
-                }
+        setTextFieldProperties(shapePointLayoutX, i -> {
+            if (selectedComponent instanceof Shape shape) {
+                selectedPoint.setX(Double.parseDouble(shapePointLayoutX.getText()));
+                shape.update();
             }
         });
 
-        shapePointLayoutY.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) {
-                try {
-                    if (selectedComponent instanceof Shape shape) {
-                        selectedPoint.setY(Double.parseDouble(shapePointLayoutY.getText()));
-                        shape.update();
-                        updateCanvas();
-                    }
-                } catch (NumberFormatException ex) {
-                    ex.printStackTrace();
-                }
+        setTextFieldProperties(shapePointLayoutY, i -> {
+            if (selectedComponent instanceof Shape shape) {
+                selectedPoint.setY(Double.parseDouble(shapePointLayoutY.getText()));
+                shape.update();
             }
         });
 
-        shapeRefractiveIndex.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) {
-                try {
-                    if (selectedComponent instanceof Shape shape) {
-                        shape.setRefractiveIndex(Double.parseDouble(shapeRefractiveIndex.getText()));
-                        updateCanvas();
-                    }
-                } catch (NumberFormatException ex) {
-                    ex.printStackTrace();
-                }
+        setTextFieldProperties(shapeRefractiveIndex, i -> {
+            if (selectedComponent instanceof Shape shape) {
+                shape.setRefractiveIndex(Double.parseDouble(shapeRefractiveIndex.getText()));
             }
         });
 
-
-        // line component information
-        lineComponentPointLayoutX.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) {
-                try {
-                    if (selectedComponent instanceof LineComponent lineComponent) {
-                        selectedPoint.setX(Double.parseDouble(lineComponentPointLayoutX.getText()));
-                        lineComponent.getEdge().updateSegment();
-                        updateCanvas();
-                    }
-                } catch (NumberFormatException ex) {
-                    ex.printStackTrace();
-                }
+        setTextFieldProperties(lineComponentPointLayoutX, i -> {
+            if (selectedComponent instanceof LineComponent lineComponent) {
+                selectedPoint.setX(Double.parseDouble(lineComponentPointLayoutX.getText()));
+                lineComponent.getEdge().updateSegment();
             }
         });
 
-        lineComponentPointLayoutY.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) {
-                try {
-                    if (selectedComponent instanceof LineComponent lineComponent) {
-                        selectedPoint.setY(Double.parseDouble(lineComponentPointLayoutY.getText()));
-                        lineComponent.getEdge().updateSegment();
-                        updateCanvas();
-                    }
-                } catch (NumberFormatException ex) {
-                    ex.printStackTrace();
-                }
+        setTextFieldProperties(lineComponentPointLayoutY, i -> {
+            if (selectedComponent instanceof LineComponent lineComponent) {
+                selectedPoint.setY(Double.parseDouble(lineComponentPointLayoutY.getText()));
+                lineComponent.getEdge().updateSegment();
             }
         });
 
-        lineComponentRotation.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) {
-                try {
-                    if (selectedComponent instanceof LineComponent lineComponent) {
-                        lineComponent.getEdge().setAngle(Double.parseDouble(lineComponentRotation.getText()));
-                        updateCanvas();
-                    }
-                } catch (NumberFormatException ex) {
-                    ex.printStackTrace();
-                }
+        setTextFieldProperties(lineComponentRotation, i -> {
+            if (selectedComponent instanceof LineComponent lineComponent) {
+                lineComponent.getEdge().setAngle(Double.parseDouble(lineComponentRotation.getText()));
+            }
+        });
+
+        setTextFieldProperties(sourceLayoutX, i -> {
+            if (selectedComponent instanceof Source source) {
+                source.getBeam().getInitialRay().getStart().setX(Double.parseDouble(sourceLayoutX.getText()));
+                source.getBeam().getInitialRay().updateRay();
+            }
+        });
+
+        setTextFieldProperties(sourceLayoutY, i -> {
+            if (selectedComponent instanceof Source source) {
+                source.getBeam().getInitialRay().getStart().setY(Double.parseDouble(sourceLayoutY.getText()));
+                source.getBeam().getInitialRay().updateRay();
+            }
+        });
+
+        setTextFieldProperties(sourceRotation, i -> {
+            if (selectedComponent instanceof Source source) {
+                source.getBeam().getInitialRay().setAngle(Double.parseDouble(sourceRotation.getText()));
+                source.getBeam().getInitialRay().updateRay();
             }
         });
 
 
-        // source information
-        sourceLayoutX.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) {
-                try {
-                    if (selectedComponent instanceof Source source) {
-                        source.getBeam().getInitialRay().getStart().setX(Double.parseDouble(sourceLayoutX.getText()));
-                        source.getBeam().getInitialRay().updateRay();
-                        updateCanvas();
-                    }
-                } catch (NumberFormatException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
-
-        sourceLayoutY.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) {
-                try {
-                    if (selectedComponent instanceof Source source) {
-                        source.getBeam().getInitialRay().getStart().setY(Double.parseDouble(sourceLayoutY.getText()));
-                        source.getBeam().getInitialRay().updateRay();
-                        updateCanvas();
-                    }
-                } catch (NumberFormatException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
-
-        sourceRotation.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) {
-                try {
-                    if (selectedComponent instanceof Source source) {
-                        source.getBeam().getInitialRay().setAngle(Double.parseDouble(sourceRotation.getText()));
-                        source.getBeam().getInitialRay().updateRay();
-                        updateCanvas();
-                    }
-                } catch (NumberFormatException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
-
+        // this is a color picker, not a text field so cannot use setTextFieldProperties
         sourceColor.setOnAction(e -> {
             if (selectedComponent instanceof Source source) {
                 source.getBeam().setColor(sourceColor.getValue());
+
+                componentsModified = true;
+                updateCanvas();
+            }
+        });
+    }
+
+    // this function sets the properties for a text field based off a general function as most of them are similar
+    private void setTextFieldProperties(TextField textField, Consumer<Integer> function) {
+        textField.textProperty().addListener((c, o, o1) -> {
+            if (!Pattern.matches("\\d*\\.?\\d*", o1)) {
+                textField.setText(o);
+            }
+        });
+
+        textField.focusedProperty().addListener((c, o, o1) -> {
+            if (!o1) {
+                function.accept(0);
+
+                componentsModified = true;
+                updateCanvas();
+            }
+        });
+
+        textField.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ENTER) {
+                function.accept(0);
+
+                componentsModified = true;
                 updateCanvas();
             }
         });
@@ -419,14 +402,12 @@ public class PrimaryController {
                     }
                 }
                 case SHIFT -> scrollPane.setPannable(true);
-                case CONTROL -> zooming = true;
             }
         });
 
         borderPane.setOnKeyReleased(e -> {
-            switch (e.getCode()) {
-                case SHIFT -> scrollPane.setPannable(false);
-                case CONTROL -> zooming = false;
+            if (e.getCode() == KeyCode.SHIFT) {
+                scrollPane.setPannable(false);
             }
         });
     }
@@ -436,7 +417,14 @@ public class PrimaryController {
      */
 
     private void initialiseCanvasActions() {
+        /*
+        mouse pressed can do quite a few things:
+        1. add a new component (depending on which button is selected)
+        2. select a point of a component to be modified or moved
+        3. select a component to be translated or rotated (rotated only if it is a line component or source)
+         */
         canvas.setOnMousePressed(e -> {
+            // adding new components
             if (source.isSelected()) {
                 selectedPoint = null;
                 selectedComponent = new Source(new Point(e.getX(), e.getY()));
@@ -486,15 +474,18 @@ public class PrimaryController {
 
                 rotatable = false;
                 rotating = false;
+            // selecting components and making them modifiable
             } else {
                 selectedPoint = findClickedPoint(e);
 
+                // if a component is rotatable, check if the user has pressed on the wheel to begin rotating it
                 if (rotatable) {
                     if (selectedPoint == null) {
                         double dx = e.getX() - rotatePoint.getX();
                         double dy = e.getY() - rotatePoint.getY();
                         double distance = Math.sqrt(dx * dx + dy * dy);
 
+                        // checking that the user has pressed inside the wheel
                         if (Math.abs(distance - rotateWheelWidth / 2) < 5) {
                             double relativeAngle = Ray.angleTo(rotatePoint, new Point(e.getX(), e.getY()));
                             if (selectedComponent instanceof Source source) {
@@ -507,12 +498,14 @@ public class PrimaryController {
                             rotating = true;
                             componentsModified = true;
                         }
+                    // user needs to not have selected a point in order to rotate something
                     } else {
                         rotatable = false;
                         rotating = false;
                     }
                 }
 
+                // user is not rotating a component -> might have selected a new component
                 if (!rotating) {
                     selectedComponent = findMousedComponent(e);
                     if (selectedComponent instanceof Source || selectedComponent instanceof LineComponent) {  // component is selected for rotation
@@ -539,6 +532,12 @@ public class PrimaryController {
             updateCanvas(e);
         });
 
+        /*
+        mouse dragged can either:
+        1. drag a point of a component
+        2. rotate a component
+        3. translate a component
+         */
         canvas.setOnMouseDragged(e -> {
             if (selectedPoint != null) {
                 selectedPoint.setX(e.getX());
@@ -608,6 +607,7 @@ public class PrimaryController {
             }
         }
 
+        // components have a hierarchy to them because it's better to select a beam than a shape on the same point
         switch (highest) {
             case 0 -> {  // component is a shape
                 int highestLayer = -1;

@@ -101,7 +101,7 @@ public class Ray {
             throw new IllegalArgumentException("Points are the same, cannot calculate angle between them");
         }
 
-        if (start.getX() == end.getX()) {
+        if (start.getX() ==  end.getX()) {
             if (start.getY() < end.getY()) {
                 return 90;
             } else {
