@@ -35,6 +35,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PrimaryController {
+    // main buttons and controls
     @FXML
     private BorderPane borderPane;
     @FXML
@@ -51,6 +52,14 @@ public class PrimaryController {
     private Canvas canvas;
     @FXML
     private ScrollPane scrollPane;
+    @FXML
+    private ListView<Source> sourceListView;
+    @FXML
+    private ListView<LineComponent> mirrorListView;
+    @FXML
+    private ListView<LineComponent> absorberListView;
+    @FXML
+    private ListView<Shape> shapeListView;
 
     // information panel
     @FXML
@@ -81,6 +90,18 @@ public class PrimaryController {
     private TextField sourceRotation;
     @FXML
     private ColorPicker sourceColor;
+    @FXML
+    private CheckBox shapeVisibility;
+    @FXML
+    private CheckBox lineComponentVisibility;
+    @FXML
+    private CheckBox sourceVisibility;
+    @FXML
+    private TextField shapeName;
+    @FXML
+    private TextField lineComponentName;
+    @FXML
+    private TextField sourceName;
 
     // non FXML stuff
     private GraphicsContext graphicsContext;
@@ -212,6 +233,7 @@ public class PrimaryController {
                                 }
                             } else {
                                 components.add(Component.parseData(matcher.group()));
+                                showComponents();
                             }
                         } catch (IllegalArgumentException ex) {
                             Alert alert = new Alert(Alert.AlertType.ERROR, ex.getMessage());
@@ -229,6 +251,32 @@ public class PrimaryController {
     }
 
     /*
+    COMPONENT PANEL
+     */
+
+    private void showComponents() {
+        sourceListView.getItems().clear();
+        mirrorListView.getItems().clear();
+        absorberListView.getItems().clear();
+        shapeListView.getItems().clear();
+
+        for (Component component: components) {
+            if (component instanceof Source source) {
+                sourceListView.getItems().add(source);
+            } else if (component instanceof LineComponent lineComponent) {
+                if (lineComponent.getEdge().getType() == Edge.REFLECTOR) {
+                    mirrorListView.getItems().add(lineComponent);
+                } else {
+                    absorberListView.getItems().add(lineComponent);
+                }
+            } else if (component instanceof Shape shape) {
+                shapeListView.getItems().add(shape);
+            }
+        }
+    }
+
+
+    /*
     INFORMATION PANEL
      */
 
@@ -240,7 +288,9 @@ public class PrimaryController {
         // show relevant information panels and add the information
         if (selectedComponent instanceof Shape shape) {
             shapeInformation.setVisible(true);
+            shapeName.setText(shape.getName());
             shapeRefractiveIndex.setText(String.format("%.2f", shape.getRefractiveIndex()));
+            shapeVisibility.setSelected(shape.getVisibility());
 
             if (selectedPoint != null) {
                 shapePointLayoutX.setText(String.format("%.1f", selectedPoint.getX()));
@@ -251,7 +301,9 @@ public class PrimaryController {
             }
         } else if (selectedComponent instanceof LineComponent lineComponent) {
             lineComponentInformation.setVisible(true);
+            lineComponentName.setText(lineComponent.getName());
             lineComponentRotation.setText(String.format("%.2f", lineComponent.getEdge().getAngle()));
+            lineComponentVisibility.setSelected(lineComponent.getVisibility());
 
             if (selectedPoint != null) {
                 lineComponentPointLayoutX.setText(String.format("%.1f", selectedPoint.getX()));
@@ -264,67 +316,71 @@ public class PrimaryController {
             sourceInformation.setVisible(true);
             sourceLayoutX.setText(String.format("%.1f", source.getBeam().getInitialRay().getStart().getX()));
             sourceLayoutY.setText(String.format("%.1f", source.getBeam().getInitialRay().getStart().getY()));
+
+            sourceName.setText(source.getName());
             sourceRotation.setText(String.format("%.2f", source.getBeam().getInitialRay().getAngle()));
+            sourceVisibility.setSelected(source.getVisibility());
             sourceColor.setValue(source.getBeam().getColor());
         }
     }
 
     private void initializeInformationPanel() {
-        setTextFieldProperties(shapePointLayoutX, i -> {
+        // setting properties of numeral fields
+        setNumberFieldProperties(shapePointLayoutX, i -> {
             if (selectedComponent instanceof Shape shape) {
                 selectedPoint.setX(Double.parseDouble(shapePointLayoutX.getText()));
                 shape.update();
             }
         });
 
-        setTextFieldProperties(shapePointLayoutY, i -> {
+        setNumberFieldProperties(shapePointLayoutY, i -> {
             if (selectedComponent instanceof Shape shape) {
                 selectedPoint.setY(Double.parseDouble(shapePointLayoutY.getText()));
                 shape.update();
             }
         });
 
-        setTextFieldProperties(shapeRefractiveIndex, i -> {
+        setNumberFieldProperties(shapeRefractiveIndex, i -> {
             if (selectedComponent instanceof Shape shape) {
                 shape.setRefractiveIndex(Double.parseDouble(shapeRefractiveIndex.getText()));
             }
         });
 
-        setTextFieldProperties(lineComponentPointLayoutX, i -> {
+        setNumberFieldProperties(lineComponentPointLayoutX, i -> {
             if (selectedComponent instanceof LineComponent lineComponent) {
                 selectedPoint.setX(Double.parseDouble(lineComponentPointLayoutX.getText()));
                 lineComponent.getEdge().updateSegment();
             }
         });
 
-        setTextFieldProperties(lineComponentPointLayoutY, i -> {
+        setNumberFieldProperties(lineComponentPointLayoutY, i -> {
             if (selectedComponent instanceof LineComponent lineComponent) {
                 selectedPoint.setY(Double.parseDouble(lineComponentPointLayoutY.getText()));
                 lineComponent.getEdge().updateSegment();
             }
         });
 
-        setTextFieldProperties(lineComponentRotation, i -> {
+        setNumberFieldProperties(lineComponentRotation, i -> {
             if (selectedComponent instanceof LineComponent lineComponent) {
                 lineComponent.getEdge().setAngle(Double.parseDouble(lineComponentRotation.getText()));
             }
         });
 
-        setTextFieldProperties(sourceLayoutX, i -> {
+        setNumberFieldProperties(sourceLayoutX, i -> {
             if (selectedComponent instanceof Source source) {
                 source.getBeam().getInitialRay().getStart().setX(Double.parseDouble(sourceLayoutX.getText()));
                 source.getBeam().getInitialRay().updateRay();
             }
         });
 
-        setTextFieldProperties(sourceLayoutY, i -> {
+        setNumberFieldProperties(sourceLayoutY, i -> {
             if (selectedComponent instanceof Source source) {
                 source.getBeam().getInitialRay().getStart().setY(Double.parseDouble(sourceLayoutY.getText()));
                 source.getBeam().getInitialRay().updateRay();
             }
         });
 
-        setTextFieldProperties(sourceRotation, i -> {
+        setNumberFieldProperties(sourceRotation, i -> {
             if (selectedComponent instanceof Source source) {
                 source.getBeam().getInitialRay().setAngle(Double.parseDouble(sourceRotation.getText()));
                 source.getBeam().getInitialRay().updateRay();
@@ -341,16 +397,71 @@ public class PrimaryController {
                 updateCanvas();
             }
         });
+
+        // setting properties of checkboxes which are similar
+        sourceVisibility.selectedProperty().addListener((c, o, o1) -> {
+            if (selectedComponent instanceof Source) {
+                selectedComponent.setVisibility(o1);
+                updateCanvas();
+            }
+        });
+
+        lineComponentVisibility.selectedProperty().addListener((c, o, o1) -> {
+            if (selectedComponent instanceof LineComponent) {
+                selectedComponent.setVisibility(o1);
+                updateCanvas();
+            }
+        });
+
+        shapeVisibility.selectedProperty().addListener((c, o, o1) -> {
+            if (selectedComponent instanceof Shape) {
+                selectedComponent.setVisibility(o1);
+                updateCanvas();
+            }
+        });
+        
+        // setting the properties of the list views
+        setListViewProperties(sourceListView);
+        setListViewProperties(mirrorListView);
+        setListViewProperties(absorberListView);
+        setListViewProperties(shapeListView);
+
+        // setting the properties of the name fields
+        setTextFieldProperties(sourceName, i -> {
+            if (selectedComponent instanceof Source) {
+                selectedComponent.setName(sourceName.getText());
+                sourceListView.refresh();
+            }
+        });
+
+        setTextFieldProperties(lineComponentName, i -> {
+            if (selectedComponent instanceof LineComponent) {
+                selectedComponent.setName(lineComponentName.getText());
+                mirrorListView.refresh();
+                absorberListView.refresh();
+            }
+        });
+
+        setTextFieldProperties(shapeName, i -> {
+            if (selectedComponent instanceof Shape) {
+                selectedComponent.setName(shapeName.getText());
+                shapeListView.refresh();
+            }
+        });
     }
 
     // this function sets the properties for a text field based off a general function as most of them are similar
-    private void setTextFieldProperties(TextField textField, Consumer<Integer> function) {
+    private void setNumberFieldProperties(TextField textField, Consumer<Integer> function) {
         textField.textProperty().addListener((c, o, o1) -> {
             if (!Pattern.matches("\\d*\\.?\\d*", o1)) {
                 textField.setText(o);
             }
         });
 
+        setTextFieldProperties(textField, function);
+    }
+
+    private void setTextFieldProperties(TextField textField, Consumer<Integer> function) {
         textField.focusedProperty().addListener((c, o, o1) -> {
             if (!o1) {
                 function.accept(0);
@@ -370,6 +481,17 @@ public class PrimaryController {
         });
     }
 
+    private <T extends Component> void setListViewProperties(ListView<T> listView) {
+        listView.setOnMouseClicked(e -> {
+            selectedComponent = listView.getSelectionModel().getSelectedItem();
+            selectedPoint = null;
+            rotating = false;
+            rotatable = false;
+
+            updateCanvas();
+        });
+    }
+
     /*
     KEYBOARD SHORTCUTS
      */
@@ -380,6 +502,7 @@ public class PrimaryController {
                 case Z -> {
                     if (components.size() > 0) {
                         removedComponents.add(components.remove(components.size() - 1));
+                        showComponents();
                         componentsModified = true;
                         updateCanvas();
                     }
@@ -387,6 +510,7 @@ public class PrimaryController {
                 case Y -> {
                     if (removedComponents.size() > 0) {
                         components.add(removedComponents.remove(removedComponents.size() - 1));
+                        showComponents();
                         componentsModified = true;
                         updateCanvas();
                     }
@@ -394,7 +518,14 @@ public class PrimaryController {
                 case DELETE -> {
                     if (selectedComponent != null) {
                         components.remove(selectedComponent);
+                        showComponents();
                         selectedComponent = null;
+
+                        sourceListView.getSelectionModel().clearSelection();
+                        mirrorListView.getSelectionModel().clearSelection();
+                        absorberListView.getSelectionModel().clearSelection();
+                        shapeListView.getSelectionModel().clearSelection();
+
                         rotatable = false;
                         rotating = false;
                         componentsModified = true;
@@ -429,6 +560,9 @@ public class PrimaryController {
                 selectedPoint = null;
                 selectedComponent = new Source(new Point(e.getX(), e.getY()));
                 components.add(selectedComponent);
+                showComponents();
+                sourceListView.getSelectionModel().select((Source) selectedComponent);
+
                 removedComponents.clear();
 
                 rotatable = false;
@@ -445,6 +579,13 @@ public class PrimaryController {
                         selectedComponent = new LineComponent(startPoint, new Point(e.getX(), e.getY()), Edge.ABSORBER);
                     }
                     components.add(selectedComponent);
+                    showComponents();
+                    if (mirror.isSelected()) {
+                        mirrorListView.getSelectionModel().select((LineComponent) selectedComponent);
+                    } else {
+                        absorberListView.getSelectionModel().select((LineComponent) selectedComponent);
+                    }
+
                     removedComponents.clear();
                     startPoint = null;
 
@@ -461,6 +602,9 @@ public class PrimaryController {
                 if (vertices.size() != 0 && selectedPoint.equals(vertices.get(0), 5)) {
                     selectedComponent = new Shape(1.5, vertices);
                     components.add(selectedComponent);
+                    showComponents();
+                    shapeListView.getSelectionModel().select((Shape) selectedComponent);
+
                     removedComponents.clear();
                     vertices.clear();
 
@@ -519,6 +663,24 @@ public class PrimaryController {
                     } else {
                         rotatable = false;
                         rotating = false;
+                    }
+
+                    // resetting the selected component in the list views
+                    sourceListView.getSelectionModel().clearSelection();
+                    mirrorListView.getSelectionModel().clearSelection();
+                    absorberListView.getSelectionModel().clearSelection();
+                    shapeListView.getSelectionModel().clearSelection();
+
+                    if (selectedComponent instanceof Source source) {
+                        sourceListView.getSelectionModel().select(source);
+                    } else if (selectedComponent instanceof LineComponent lineComponent) {
+                        if (lineComponent.getEdge().getType() == Edge.REFLECTOR) {
+                            mirrorListView.getSelectionModel().select(lineComponent);
+                        } else {
+                            absorberListView.getSelectionModel().select(lineComponent);
+                        }
+                    } else if (selectedComponent instanceof Shape shape) {
+                        shapeListView.getSelectionModel().select(shape);
                     }
                 }
                 showInformation();
@@ -702,7 +864,9 @@ public class PrimaryController {
         if (componentsModified) {
             for (Component component : components) {
                 if (component instanceof Source source) {
-                    source.getBeam().generateBeam(components);
+                    if (source.getVisibility()) {
+                        source.getBeam().generateBeam(components);
+                    }
                 }
             }
             componentsModified = false;
@@ -711,83 +875,86 @@ public class PrimaryController {
         graphicsContext.setFill(backgroundColor);
         graphicsContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-        for (Component component : components) {  // draw components
-            // drawing the shape of the component
-            graphicsContext.beginPath();
-            if (component instanceof Shape shape) {
-                for (Edge edge : shape.getEdges()) {
-                    drawSegment(edge);
-                }
-            } else if (component instanceof LineComponent lineComponent) {
-                drawSegment(lineComponent.getEdge());
-            } else if (component instanceof Source source) {
-                for (LightComponent lightComponent : source.getBeam().getLightComponents()) {
-                    if (lightComponent instanceof LightSegment lightSegment) {
-                        drawSegment(lightSegment);
-                    } else if (lightComponent instanceof LightRay lightRay) {
-                        drawRay(lightRay);
+        for (Component component: components) {  // draw components
+            // do not draw the component if it is not visible
+            if (component.getVisibility()) {
+                // drawing the shape of the component
+                graphicsContext.beginPath();
+                if (component instanceof Shape shape) {
+                    for (Edge edge : shape.getEdges()) {
+                        drawSegment(edge);
                     }
-                }
-            }
-
-            // setting the color of the component to be drawn
-            if (component == selectedComponent) {
-                graphicsContext.setStroke(selectedColor);
-            } else if (component == hoveredComponent) {
-                graphicsContext.setStroke(hoveredColor);
-            } else {
-                if (component instanceof Shape) {
-                    graphicsContext.setStroke(shapeColor);
-                } else if (component instanceof Source source) {
-                    graphicsContext.setStroke(source.getBeam().getColor());
                 } else if (component instanceof LineComponent lineComponent) {
-                    if (lineComponent.getEdge().getType() == Edge.ABSORBER) {
-                        graphicsContext.setStroke(absorberColor);
-                    } else if (lineComponent.getEdge().getType() == Edge.REFLECTOR) {
-                        graphicsContext.setStroke(mirrorColor);
+                    drawSegment(lineComponent.getEdge());
+                } else if (component instanceof Source source) {
+                    for (LightComponent lightComponent : source.getBeam().getLightComponents()) {
+                        if (lightComponent instanceof LightSegment lightSegment) {
+                            drawSegment(lightSegment);
+                        } else if (lightComponent instanceof LightRay lightRay) {
+                            drawRay(lightRay);
+                        }
                     }
                 }
-            }
 
-            graphicsContext.stroke();
-            graphicsContext.closePath();
-
-            // drawing the normals if the component is a source
-            if (component instanceof Source source) {
-                graphicsContext.setStroke(normalColor);
-                graphicsContext.setLineDashes(2);
-                for (LightComponent lightComponent : source.getBeam().getLightComponents()) {
-                    Normal normal = lightComponent.getNormal();
-                    if (normal != null) {
-                        graphicsContext.beginPath();
-                        drawNormal(normal.edge(), normal.intersection());
-                        graphicsContext.stroke();
+                // setting the color of the component to be drawn
+                if (component == selectedComponent) {
+                    graphicsContext.setStroke(selectedColor);
+                } else if (component == hoveredComponent) {
+                    graphicsContext.setStroke(hoveredColor);
+                } else {
+                    if (component instanceof Shape) {
+                        graphicsContext.setStroke(shapeColor);
+                    } else if (component instanceof Source source) {
+                        graphicsContext.setStroke(source.getBeam().getColor());
+                    } else if (component instanceof LineComponent lineComponent) {
+                        if (lineComponent.getEdge().getType() == Edge.ABSORBER) {
+                            graphicsContext.setStroke(absorberColor);
+                        } else if (lineComponent.getEdge().getType() == Edge.REFLECTOR) {
+                            graphicsContext.setStroke(mirrorColor);
+                        }
                     }
                 }
+
+                graphicsContext.stroke();
                 graphicsContext.closePath();
-                graphicsContext.setLineDashes(0);
+
+                // drawing the normals if the component is a source
+                if (component instanceof Source source) {
+                    graphicsContext.setStroke(normalColor);
+                    graphicsContext.setLineDashes(2);
+                    for (LightComponent lightComponent : source.getBeam().getLightComponents()) {
+                        Normal normal = lightComponent.getNormal();
+                        if (normal != null) {
+                            graphicsContext.beginPath();
+                            drawNormal(normal.edge(), normal.intersection());
+                            graphicsContext.stroke();
+                        }
+                    }
+                    graphicsContext.closePath();
+                    graphicsContext.setLineDashes(0);
+                }
             }
-        }
 
-        // drawing the rotate-wheel if the selected component is a source or a line component
-        if (rotatable) {
-            graphicsContext.setStroke(shapeColor);
-            graphicsContext.beginPath();
+            // drawing the rotate-wheel if the selected component is a source or a line component
+            if (rotatable) {
+                graphicsContext.setStroke(shapeColor);
+                graphicsContext.beginPath();
 
-            Point point;
-            if (selectedComponent instanceof Source source) {
-                point = source.getBeam().getInitialRay().getStart();
-            } else if (selectedComponent instanceof LineComponent lineComponent) {
-                point = lineComponent.getEdge().midpoint();
-            } else {
-                throw new IllegalArgumentException("Selected component for rotation is not a source or a line component");
+                Point point;
+                if (selectedComponent instanceof Source source) {
+                    point = source.getBeam().getInitialRay().getStart();
+                } else if (selectedComponent instanceof LineComponent lineComponent) {
+                    point = lineComponent.getEdge().midpoint();
+                } else {
+                    throw new IllegalArgumentException("Selected component for rotation is not a source or a line component");
+                }
+
+                graphicsContext.setLineWidth(2);
+                graphicsContext.strokeArc(point.getX() - rotateWheelWidth / 2, point.getY() - rotateWheelWidth / 2,
+                        rotateWheelWidth, rotateWheelWidth, 0, 360, ArcType.OPEN);
+                graphicsContext.closePath();
+                graphicsContext.setLineWidth(1);
             }
-
-            graphicsContext.setLineWidth(2);
-            graphicsContext.strokeArc(point.getX() - rotateWheelWidth/2, point.getY() - rotateWheelWidth/2,
-                    rotateWheelWidth, rotateWheelWidth, 0, 360, ArcType.OPEN);
-            graphicsContext.closePath();
-            graphicsContext.setLineWidth(1);
         }
     }
 

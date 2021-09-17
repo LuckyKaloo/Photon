@@ -8,6 +8,9 @@ import application.Model.Light.LightRay;
 import java.util.ArrayList;
 
 public class Shape implements Component {
+    private String name;
+    private boolean visible;
+
     private double refractiveIndex;
     private final ArrayList<Edge> edges;
     private final ArrayList<Point> vertexes;
@@ -38,6 +41,15 @@ public class Shape implements Component {
         } else {
             throw new IllegalArgumentException("Input an ArrayList of Point or Edge objects only");
         }
+
+        name = "Shape";
+        visible = true;
+    }
+
+    public <T> Shape(String name, boolean visible, double refractiveIndex, ArrayList<T> objects) {
+        this(refractiveIndex, objects);
+        this.name = name;
+        this.visible = visible;
     }
 
     @Override
@@ -62,6 +74,16 @@ public class Shape implements Component {
 
     public void setRefractiveIndex(double refractiveIndex) {
         this.refractiveIndex = refractiveIndex;
+    }
+
+    @Override
+    public boolean getVisibility() {
+        return visible;
+    }
+
+    @Override
+    public void setVisibility(boolean visible) {
+        this.visible = visible;
     }
 
     /* crossing number algorithm
@@ -100,6 +122,16 @@ public class Shape implements Component {
 
     public int getLayer() {
         return layer;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
@@ -166,13 +198,15 @@ public class Shape implements Component {
 
     @Override
     public String toString() {
-        return edges.toString();
+        return name;
     }
 
     @Override
     public String toData() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Shape {\n");
+        stringBuilder.append("\tName: ").append(name).append("\n");
+        stringBuilder.append("\tVisible: ").append(visible).append("\n");
         stringBuilder.append("\tRefractive Index: ").append(refractiveIndex).append("\n");
         for (Point point : vertexes) {
             stringBuilder.append("\t").append(point.toData()).append("\n");

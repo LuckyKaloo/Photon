@@ -6,19 +6,47 @@ import application.Model.Light.LightRay;
 import javafx.scene.paint.Color;
 
 public class Source implements Component {
+    private String name;
+    private boolean visible;
+
     private final Beam beam;
 
     public Source(Point start) {
         beam = new Beam(new LightRay(0, start, null, null));
+        name = "Source";
+        visible = true;
     }
 
-    public Source(Point start, double angle, Color color) {
+    public Source(String name, boolean visible, Point start, double angle, Color color) {
+        this.name = name;
+        this.visible = visible;
+
         beam = new Beam(new LightRay(angle, start, null, null));
         beam.setColor(color);
     }
 
     public Beam getBeam() {
         return beam;
+    }
+
+    @Override
+    public boolean getVisibility() {
+        return visible;
+    }
+
+    @Override
+    public void setVisibility(boolean visible) {
+        this.visible = visible;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
@@ -39,6 +67,8 @@ public class Source implements Component {
     @Override
     public String toData() {
         return "Source {\n" +
+                "\tName: " + name + "\n" +
+                "\tVisible: " + visible + "\n" +
                 "\t" + beam.getInitialRay().getStart().toData() + "\n" +
                 "\tAngle: " + beam.getInitialRay().getAngle() + "\n" +
 
@@ -47,5 +77,10 @@ public class Source implements Component {
                 beam.getColor().getGreen() + "," +
                 beam.getColor().getBlue() + ")\n" +
                 "}\n";
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }
