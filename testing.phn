@@ -1,0 +1,38 @@
+Canvas {
+	Width: 4000.0
+	Height: 4000.0
+}
+Source {
+	Name: Source
+	Visible: true
+	Point: (134.0,3634.0)
+	Angle: 0.0
+	Color: (1.0,1.0,1.0)
+}
+Shape {
+	Name: Shape
+	Visible: true
+	Refractive Index: 1.5
+	Point: (488.0,3666.0)
+	Point: (224.0,3613.0)
+	Point: (381.0,3564.0)
+}
+Mirror {
+	Name: Mirror
+	Visible: true
+	Point: (491.0548464934748,3534.9771341354563)
+	Point: (523.9451535065252,3614.0228658645437)
+}
+Mirror {
+	Name: Mirror
+	Visible: true
+	Point: (302.0,3556.0)
+	Point: (338.0,3521.0)
+}
+Source {
+	Name: Source
+	Visible: true
+	Point: (249.0,3569.0)
+	Angle: 37.68526322027288
+	Color: (1.0,1.0,1.0)
+}
