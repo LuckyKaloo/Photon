@@ -3,7 +3,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Accordion?>
-<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ColorPicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
@@ -73,21 +72,18 @@
                     <Label text="Refractive Index" />
                     <TextField fx:id="shapeRefractiveIndex" GridPane.columnIndex="2" />
                 </GridPane>
-            <CheckBox fx:id="shapeVisibility" layoutX="9.0" layoutY="224.0" mnemonicParsing="false" text="Visible" />
-            <GridPane alignment="CENTER" layoutX="9.0" layoutY="17.0" prefHeight="30.0" prefWidth="183.0">
-               <columnConstraints>
-                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="94.0" minWidth="10.0" prefWidth="88.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="87.0" minWidth="0.0" prefWidth="13.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="110.0" minWidth="10.0" prefWidth="85.0" />
-               </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-               </rowConstraints>
-               <children>
-                  <Label text="Name" />
-                  <TextField fx:id="shapeName" GridPane.columnIndex="2" />
-               </children>
-            </GridPane>
+                <GridPane alignment="CENTER" layoutX="9.0" layoutY="17.0" prefHeight="30.0" prefWidth="183.0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="94.0" minWidth="10.0" prefWidth="88.0"/>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="87.0" minWidth="0.0" prefWidth="13.0"/>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="110.0" minWidth="10.0" prefWidth="85.0"/>
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                    </rowConstraints>
+                    <Label text="Name"/>
+                    <TextField fx:id="shapeName" GridPane.columnIndex="2"/>
+                </GridPane>
             </AnchorPane>
             <AnchorPane fx:id="lineComponentInformation" prefHeight="437.0" prefWidth="200.0" visible="false">
                 <GridPane alignment="CENTER" layoutX="9.0" layoutY="85.0" prefHeight="60.0" prefWidth="183.0">
@@ -119,21 +115,18 @@
                     <TextField fx:id="lineComponentRotation" GridPane.columnIndex="2" />
                 </GridPane>
                 <Label layoutX="158.0" layoutY="160.0" text="Mirror" />
-            <CheckBox fx:id="lineComponentVisibility" layoutX="9.0" layoutY="224.0" mnemonicParsing="false" text="Visible" />
-            <GridPane alignment="CENTER" layoutX="9.0" layoutY="17.0" prefHeight="30.0" prefWidth="183.0">
-               <columnConstraints>
-                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="94.0" minWidth="10.0" prefWidth="88.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="87.0" minWidth="0.0" prefWidth="13.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="110.0" minWidth="10.0" prefWidth="85.0" />
-               </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-               </rowConstraints>
-               <children>
-                  <Label text="Name" />
-                  <TextField fx:id="lineComponentName" GridPane.columnIndex="2" />
-               </children>
-            </GridPane>
+                <GridPane alignment="CENTER" layoutX="9.0" layoutY="17.0" prefHeight="30.0" prefWidth="183.0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="94.0" minWidth="10.0" prefWidth="88.0"/>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="87.0" minWidth="0.0" prefWidth="13.0"/>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="110.0" minWidth="10.0" prefWidth="85.0"/>
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                    </rowConstraints>
+                    <Label text="Name"/>
+                    <TextField fx:id="lineComponentName" GridPane.columnIndex="2"/>
+                </GridPane>
             </AnchorPane>
             <AnchorPane fx:id="sourceInformation" prefHeight="376.0" prefWidth="200.0">
                 <GridPane alignment="CENTER" layoutX="9.0" layoutY="116.0" prefHeight="90.0" prefWidth="183.0">
@@ -155,59 +148,50 @@
                     <TextField fx:id="sourceRotation" GridPane.columnIndex="2" GridPane.rowIndex="2" />
                 </GridPane>
                 <ColorPicker fx:id="sourceColor" layoutX="14.0" layoutY="69.0" />
-            <CheckBox fx:id="sourceVisibility" layoutX="9.0" layoutY="224.0" mnemonicParsing="false" text="Visible" />
-            <GridPane alignment="CENTER" layoutX="9.0" layoutY="17.0" prefHeight="30.0" prefWidth="183.0">
-               <columnConstraints>
-                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="94.0" minWidth="10.0" prefWidth="88.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="87.0" minWidth="0.0" prefWidth="13.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="110.0" minWidth="10.0" prefWidth="85.0" />
-               </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-               </rowConstraints>
-               <children>
-                  <Label text="Name" />
-                  <TextField fx:id="sourceName" GridPane.columnIndex="2" />
-               </children>
-            </GridPane>
+                <GridPane alignment="CENTER" layoutX="9.0" layoutY="17.0" prefHeight="30.0" prefWidth="183.0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="94.0" minWidth="10.0" prefWidth="88.0"/>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="87.0" minWidth="0.0" prefWidth="13.0"/>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="110.0" minWidth="10.0" prefWidth="85.0"/>
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                    </rowConstraints>
+                    <Label text="Name"/>
+                    <TextField fx:id="sourceName" GridPane.columnIndex="2"/>
+                </GridPane>
             </AnchorPane>
         </Pane>
     </right>
    <bottom>
-      <HBox prefHeight="114.0" prefWidth="771.0" spacing="30.0" BorderPane.alignment="CENTER">
-         <children>
-               <ToggleButton fx:id="source" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0" />
-               <ToggleButton fx:id="mirror" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0" />
-               <ToggleButton fx:id="absorber" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0" />
-               <ToggleButton fx:id="shape" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0" />
-         </children>
-         <padding>
-            <Insets left="30.0" top="17.0" />
-         </padding>
-      </HBox>
+       <HBox prefHeight="114.0" prefWidth="771.0" spacing="30.0" BorderPane.alignment="CENTER">
+           <padding>
+               <Insets left="30.0" top="17.0"/>
+           </padding>
+           <ToggleButton fx:id="source" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+                         minWidth="-Infinity" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0"/>
+           <ToggleButton fx:id="mirror" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+                         minWidth="-Infinity" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0"/>
+           <ToggleButton fx:id="absorber" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+                         minWidth="-Infinity" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0"/>
+           <ToggleButton fx:id="shape" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+                         minWidth="-Infinity" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0"/>
+       </HBox>
    </bottom>
    <left>
-      <Accordion BorderPane.alignment="CENTER">
+      <Accordion fx:id="accordion" BorderPane.alignment="CENTER">
         <panes>
-          <TitledPane animated="false" text="Source">
-               <content>
-                  <ListView fx:id="sourceListView" prefHeight="200.0" prefWidth="200.0" />
-               </content>
-          </TitledPane>
-          <TitledPane animated="false" text="Mirror">
-               <content>
-                  <ListView fx:id="mirrorListView" prefHeight="200.0" prefWidth="200.0" />
-               </content>
-          </TitledPane>
-          <TitledPane animated="false" text="Absorber">
-               <content>
-                  <ListView fx:id="absorberListView" prefHeight="200.0" prefWidth="200.0" />
-               </content>
-          </TitledPane>
+            <TitledPane animated="false" text="Source">
+                <ListView fx:id="sourceListView" prefHeight="200.0" prefWidth="200.0"/>
+            </TitledPane>
+            <TitledPane animated="false" text="Mirror">
+                <ListView fx:id="mirrorListView" prefHeight="200.0" prefWidth="200.0"/>
+            </TitledPane>
+            <TitledPane animated="false" text="Absorber">
+                <ListView fx:id="absorberListView" prefHeight="200.0" prefWidth="200.0"/>
+            </TitledPane>
             <TitledPane animated="false" text="Shape">
-               <content>
-                  <ListView fx:id="shapeListView" prefHeight="200.0" prefWidth="200.0" />
-               </content>
+                <ListView fx:id="shapeListView" prefHeight="200.0" prefWidth="200.0"/>
             </TitledPane>
         </panes>
       </Accordion>

@@ -44,7 +44,7 @@ public class Beam {
         lightComponents.clear();
 
         // only goes to 1000 to prevent the program from crashing if there are infinite loops
-        // eg. mirror parallel to a mirror which is perpendicular to a source between them -> infinite reflections
+        // e.g. mirror parallel to a mirror which is perpendicular to a source between them -> infinite reflections
         for (int i = 0; i < 1000; i++) {
             ArrayList<Point> intersections = new ArrayList<>();
             ArrayList<Integer> componentIndexes = new ArrayList<>();
