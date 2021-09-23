@@ -8,6 +8,7 @@ import application.Model.Light.LightComponent;
 import application.Model.Light.LightRay;
 import application.Model.Light.LightSegment;
 import application.Model.Light.Normal;
+import io.github.palexdev.materialfx.controls.MFXTextField;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
@@ -33,24 +34,55 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class PrimaryController {
-    // main buttons and controls
+public class Editor {
     @FXML
     private BorderPane borderPane;
     @FXML
     private MenuBar menuBar;
     @FXML
+    private ScrollPane scrollPane;
+    @FXML
+    private Canvas canvas;
+    @FXML
+    private Pane information;
+    @FXML
+    private HBox nameInformation;
+    @FXML
+    private MFXTextField nameTextField;
+    @FXML
+    private AnchorPane shapeInformation;
+    @FXML
+    private MFXTextField shapeLayoutX;
+    @FXML
+    private MFXTextField shapeLayoutY;
+    @FXML
+    private MFXTextField shapeRefractiveIndex;
+    @FXML
+    private AnchorPane lineComponentInformation;
+    @FXML
+    private MFXTextField lineComponentLayoutX;
+    @FXML
+    private MFXTextField lineComponentLayoutY;
+    @FXML
+    private MFXTextField lineComponentRotation;
+    @FXML
+    private AnchorPane sourceInformation;
+    @FXML
+    private MFXTextField sourceLayoutX;
+    @FXML
+    private MFXTextField sourceLayoutY;
+    @FXML
+    private MFXTextField sourceRotation;
+    @FXML
+    private ColorPicker sourceColorPicker;
+    @FXML
     private ToggleButton source;
+    @FXML
+    private ToggleButton mirror;
     @FXML
     private ToggleButton absorber;
     @FXML
     private ToggleButton shape;
-    @FXML
-    private ToggleButton mirror;
-    @FXML
-    private Canvas canvas;
-    @FXML
-    private ScrollPane scrollPane;
     @FXML
     private Accordion accordion;
     @FXML
@@ -61,42 +93,6 @@ public class PrimaryController {
     private ListView<GridPane> absorberListView;
     @FXML
     private ListView<GridPane> shapeListView;
-
-    // information panel
-    @FXML
-    private Pane information;
-    @FXML
-    private AnchorPane shapeInformation;
-    @FXML
-    private TextField shapePointLayoutX;
-    @FXML
-    private TextField shapePointLayoutY;
-    @FXML
-    private TextField shapeRefractiveIndex;
-    @FXML
-    private AnchorPane lineComponentInformation;
-    @FXML
-    private TextField lineComponentPointLayoutX;
-    @FXML
-    private TextField lineComponentPointLayoutY;
-    @FXML
-    private TextField lineComponentRotation;
-    @FXML
-    private AnchorPane sourceInformation;
-    @FXML
-    private TextField sourceLayoutX;
-    @FXML
-    private TextField sourceLayoutY;
-    @FXML
-    private TextField sourceRotation;
-    @FXML
-    private ColorPicker sourceColor;
-    @FXML
-    private TextField shapeName;
-    @FXML
-    private TextField lineComponentName;
-    @FXML
-    private TextField sourceName;
 
     // non FXML stuff
     private GraphicsContext graphicsContext;
@@ -119,6 +115,7 @@ public class PrimaryController {
 
     private final HashMap<GridPane, Component> gridPaneComponentHashMap = new HashMap<>();
     private final HashMap<Component, GridPane> componentGridPaneHashMap = new HashMap<>();
+    private final HashMap<Component, Text> componentTextHashMap = new HashMap<>();
 
 
     private final static int maxDistanceSelect = 6;
@@ -174,6 +171,7 @@ public class PrimaryController {
         initialiseMenuBar();
         initializeInformationPanel();
 
+        componentsModified = true;
         updateCanvas();
     }
 
@@ -184,11 +182,16 @@ public class PrimaryController {
     private void initialiseMenuBar() {
         MenuItem save = new MenuItem("Save");
         save.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            Stage stage = new Stage();
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Photon Files", "*.phn"));
+            File selectedFile = fileChooser.showSaveDialog(stage);
+
             try {
-                FileWriter fileWriter = new FileWriter("testing.phn");
+                FileWriter fileWriter = new FileWriter(selectedFile);
                 fileWriter.append("Canvas {\n\tWidth: ").append(String.valueOf(canvas.getWidth()))
                         .append("\n\tHeight: ").append(String.valueOf(canvas.getHeight())).append("\n}\n");
-                for (Component component: components) {
+                for (Component component : components) {
                     fileWriter.append(component.toData());
                 }
                 fileWriter.close();
@@ -202,11 +205,12 @@ public class PrimaryController {
         load.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
             Stage stage = new Stage();
-            fileChooser.getExtensionFilters().addAll(
-                    new FileChooser.ExtensionFilter("Photon Files", "*.phn"));
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Photon Files", "*.phn"));
             File selectedFile = fileChooser.showOpenDialog(stage);
 
             if (selectedFile != null) {
+                removedComponents.clear();
+                visibleComponents.clear();
                 components.clear();
 
                 try {
@@ -275,6 +279,11 @@ public class PrimaryController {
                 if (o1) {
                     toggleButton.setGraphic(invisible);
                     visibleComponents.remove(component);
+
+                    if (component == selectedComponent) {
+                        selectedComponent = null;
+                        selectedPoint = null;
+                    }
                 } else {
                     toggleButton.setGraphic(visible);
                     visibleComponents.add(component);
@@ -297,6 +306,7 @@ public class PrimaryController {
 
         gridPaneComponentHashMap.put(gridPane, component);
         componentGridPaneHashMap.put(component, gridPane);
+        componentTextHashMap.put(component, text);
 
         if (component instanceof Source) {
             sourceListView.getItems().add(gridPane);
@@ -327,6 +337,11 @@ public class PrimaryController {
         removedComponents.add(component);
         if (component.getVisibility()) {
             visibleComponents.remove(component);
+
+            if (component == selectedComponent) {
+                selectedComponent = null;
+                selectedPoint = null;
+            }
         }
 
         if (component instanceof Source) {
@@ -355,54 +370,56 @@ public class PrimaryController {
             node.setVisible(false);
         }
 
+        if (selectedComponent != null) {
+            nameInformation.setVisible(true);
+            nameTextField.setText(selectedComponent.getName());
+        }
+
         // show relevant information panels and add the information
         if (selectedComponent instanceof Shape shape) {
             shapeInformation.setVisible(true);
-            shapeName.setText(shape.getName());
-            shapeRefractiveIndex.setText(String.format("%.2f", shape.getRefractiveIndex()));
 
+            shapeRefractiveIndex.setText(String.format("%.2f", shape.getRefractiveIndex()));
             if (selectedPoint != null) {
-                shapePointLayoutX.setText(String.format("%.1f", selectedPoint.getX()));
-                shapePointLayoutY.setText(String.format("%.1f", selectedPoint.getY()));
+                shapeLayoutX.setText(String.format("%.1f", selectedPoint.getX()));
+                shapeLayoutY.setText(String.format("%.1f", selectedPoint.getY()));
             } else {
-                shapePointLayoutX.setText("");
-                shapePointLayoutY.setText("");
+                shapeLayoutX.setText("");
+                shapeLayoutY.setText("");
             }
         } else if (selectedComponent instanceof LineComponent lineComponent) {
             lineComponentInformation.setVisible(true);
-            lineComponentName.setText(lineComponent.getName());
             lineComponentRotation.setText(String.format("%.2f", lineComponent.getEdge().getAngle()));
 
             if (selectedPoint != null) {
-                lineComponentPointLayoutX.setText(String.format("%.1f", selectedPoint.getX()));
-                lineComponentPointLayoutY.setText(String.format("%.1f", selectedPoint.getY()));
+                lineComponentLayoutX.setText(String.format("%.1f", selectedPoint.getX()));
+                lineComponentLayoutY.setText(String.format("%.1f", selectedPoint.getY()));
             } else {
-                lineComponentPointLayoutX.setText("");
-                lineComponentPointLayoutY.setText("");
+                lineComponentLayoutX.setText("");
+                lineComponentLayoutY.setText("");
             }
         } else if (selectedComponent instanceof Source source) {
             sourceInformation.setVisible(true);
             sourceLayoutX.setText(String.format("%.1f", source.getBeam().getInitialRay().getStart().getX()));
             sourceLayoutY.setText(String.format("%.1f", source.getBeam().getInitialRay().getStart().getY()));
 
-            sourceName.setText(source.getName());
             sourceRotation.setText(String.format("%.2f", source.getBeam().getInitialRay().getAngle()));
-            sourceColor.setValue(source.getBeam().getColor());
+            sourceColorPicker.setValue(source.getBeam().getColor());
         }
     }
 
     private void initializeInformationPanel() {
         // setting properties of numeral fields
-        setNumberFieldProperties(shapePointLayoutX, i -> {
+        setNumberFieldProperties(shapeLayoutX, i -> {
             if (selectedComponent instanceof Shape shape) {
-                selectedPoint.setX(Double.parseDouble(shapePointLayoutX.getText()));
+                selectedPoint.setX(Double.parseDouble(shapeLayoutX.getText()));
                 shape.update();
             }
         });
 
-        setNumberFieldProperties(shapePointLayoutY, i -> {
+        setNumberFieldProperties(shapeLayoutY, i -> {
             if (selectedComponent instanceof Shape shape) {
-                selectedPoint.setY(Double.parseDouble(shapePointLayoutY.getText()));
+                selectedPoint.setY(Double.parseDouble(shapeLayoutY.getText()));
                 shape.update();
             }
         });
@@ -413,16 +430,16 @@ public class PrimaryController {
             }
         });
 
-        setNumberFieldProperties(lineComponentPointLayoutX, i -> {
+        setNumberFieldProperties(lineComponentLayoutX, i -> {
             if (selectedComponent instanceof LineComponent lineComponent) {
-                selectedPoint.setX(Double.parseDouble(lineComponentPointLayoutX.getText()));
+                selectedPoint.setX(Double.parseDouble(lineComponentLayoutX.getText()));
                 lineComponent.getEdge().updateSegment();
             }
         });
 
-        setNumberFieldProperties(lineComponentPointLayoutY, i -> {
+        setNumberFieldProperties(lineComponentLayoutY, i -> {
             if (selectedComponent instanceof LineComponent lineComponent) {
-                selectedPoint.setY(Double.parseDouble(lineComponentPointLayoutY.getText()));
+                selectedPoint.setY(Double.parseDouble(lineComponentLayoutY.getText()));
                 lineComponent.getEdge().updateSegment();
             }
         });
@@ -456,9 +473,9 @@ public class PrimaryController {
 
 
         // this is a color picker, not a text field so cannot use setTextFieldProperties
-        sourceColor.setOnAction(e -> {
+        sourceColorPicker.setOnAction(e -> {
             if (selectedComponent instanceof Source source) {
-                source.getBeam().setColor(sourceColor.getValue());
+                source.getBeam().setColor(sourceColorPicker.getValue());
 
                 componentsModified = true;
                 updateCanvas();
@@ -473,31 +490,33 @@ public class PrimaryController {
         setListViewProperties(shapeListView);
 
         // setting the properties of the name fields
-        setTextFieldProperties(sourceName, i -> {
-            if (selectedComponent instanceof Source) {
-                selectedComponent.setName(sourceName.getText());
-                sourceListView.refresh();
+        nameTextField.focusedProperty().addListener((c, o, o1) -> {
+            if (!o1) {
+                if (selectedComponent != null) {
+                    selectedComponent.setName(nameTextField.getText());
+                    componentTextHashMap.get(selectedComponent).setText(nameTextField.getText());
+                }
+
+                componentsModified = true;
+                updateCanvas();
             }
         });
 
-        setTextFieldProperties(lineComponentName, i -> {
-            if (selectedComponent instanceof LineComponent) {
-                selectedComponent.setName(lineComponentName.getText());
-                mirrorListView.refresh();
-                absorberListView.refresh();
-            }
-        });
+        nameTextField.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ENTER) {
+                if (selectedComponent != null) {
+                    selectedComponent.setName(nameTextField.getText());
+                    componentTextHashMap.get(selectedComponent).setText(nameTextField.getText());
+                }
 
-        setTextFieldProperties(shapeName, i -> {
-            if (selectedComponent instanceof Shape) {
-                selectedComponent.setName(shapeName.getText());
-                shapeListView.refresh();
+                componentsModified = true;
+                updateCanvas();
             }
         });
     }
 
     // this function sets the properties for a text field based off a general function as most of them are similar
-    private void setNumberFieldProperties(TextField textField, Consumer<Integer> function) {
+    private void setNumberFieldProperties(MFXTextField textField, Consumer<Integer> function) {
         textField.textProperty().addListener((c, o, o1) -> {
             if (!Pattern.matches("\\d*\\.?\\d*", o1)) {
                 textField.setText(o);
@@ -611,8 +630,8 @@ public class PrimaryController {
                     addComponent(selectedComponent);
                     startPoint = null;
 
-                    lineComponentPointLayoutX.setDisable(true);
-                    lineComponentPointLayoutY.setDisable(true);
+                    lineComponentLayoutX.setDisable(true);
+                    lineComponentLayoutY.setDisable(true);
                 }
             } else if (shape.isSelected()) {
                 selectedPoint = null;
@@ -622,8 +641,8 @@ public class PrimaryController {
                     addComponent(selectedComponent);
                     vertices.clear();
 
-                    shapePointLayoutX.setDisable(true);
-                    shapePointLayoutY.setDisable(true);
+                    shapeLayoutX.setDisable(true);
+                    shapeLayoutY.setDisable(true);
                 } else {
                     vertices.add(selectedPoint);
                 }
@@ -732,6 +751,7 @@ public class PrimaryController {
                 }
                 componentsModified = true;
             }
+
             updateCanvas(e);
         });
 
@@ -830,10 +850,10 @@ public class PrimaryController {
         if (clickedComponent instanceof Shape shape) {
             for (Point point: shape.getVertexes()) {
                 if (Point.distance(point, clickedPoint) < maxDistanceSelect) {
-                    shapePointLayoutX.setDisable(false);
-                    shapePointLayoutY.setDisable(false);
-                    lineComponentPointLayoutX.setDisable(true);
-                    lineComponentPointLayoutY.setDisable(true);
+                    shapeLayoutX.setDisable(false);
+                    shapeLayoutY.setDisable(false);
+                    lineComponentLayoutX.setDisable(true);
+                    lineComponentLayoutY.setDisable(true);
                     return point;
                 }
             }
@@ -846,26 +866,26 @@ public class PrimaryController {
             }
 
             if (point != null) {
-                shapePointLayoutX.setDisable(true);
-                shapePointLayoutY.setDisable(true);
-                lineComponentPointLayoutX.setDisable(false);
-                lineComponentPointLayoutY.setDisable(false);
+                shapeLayoutX.setDisable(true);
+                shapeLayoutY.setDisable(true);
+                lineComponentLayoutX.setDisable(false);
+                lineComponentLayoutY.setDisable(false);
                 return point;
             }
         } else if (clickedComponent instanceof Source source) {
             if (Point.distance(source.getBeam().getInitialRay().getStart(), clickedPoint) < maxDistanceSelect) {
-                shapePointLayoutX.setDisable(true);
-                shapePointLayoutY.setDisable(true);
-                lineComponentPointLayoutX.setDisable(true);
-                lineComponentPointLayoutY.setDisable(true);
+                shapeLayoutX.setDisable(true);
+                shapeLayoutY.setDisable(true);
+                lineComponentLayoutX.setDisable(true);
+                lineComponentLayoutY.setDisable(true);
                 return source.getBeam().getInitialRay().getStart();
             }
         }
 
-        shapePointLayoutX.setDisable(true);
-        shapePointLayoutY.setDisable(true);
-        lineComponentPointLayoutX.setDisable(true);
-        lineComponentPointLayoutY.setDisable(true);
+        shapeLayoutX.setDisable(true);
+        shapeLayoutY.setDisable(true);
+        lineComponentLayoutX.setDisable(true);
+        lineComponentLayoutY.setDisable(true);
         return null;
     }
 
@@ -879,9 +899,12 @@ public class PrimaryController {
                     source.getBeam().generateBeam(visibleComponents);
                 }
             }
-            componentsModified = false;
         }
 
+        drawCanvas();
+    }
+
+    private void drawCanvas() {
         graphicsContext.setFill(backgroundColor);
         graphicsContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 

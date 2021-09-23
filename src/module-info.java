@@ -3,6 +3,8 @@ module Project {
     requires javafx.base;
     requires javafx.graphics;
     requires javafx.fxml;
+    requires reactfx;
+    requires MaterialFX;
 
     opens application;
     opens application.Model.Components;
