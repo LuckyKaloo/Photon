@@ -1,5 +1,6 @@
 package application.Controller;
 
+import application.Main;
 import application.Model.Components.*;
 import application.Model.Geometry.Point;
 import application.Model.Geometry.Ray;
@@ -118,21 +119,21 @@ public class Editor {
     private final HashMap<Component, Text> componentTextHashMap = new HashMap<>();
 
 
-    private final static int maxDistanceSelect = 6;
-    private final static int normalWidth = 5;
-    private final static double rotateWheelWidth = 50;
+    private final static int MAX_DISTANCE_SELECT = 6;
+    private final static int NORMAL_WIDTH = 5;
+    private final static double ROTATE_WHEEL_WIDTH = 50;
 
     // colors
-    private final static Color backgroundColor = Color.rgb(2, 6, 12);
-    private final static Color shapeColor = Color.rgb(199, 111, 243);
-    private final static Color absorberColor = Color.rgb(126, 252, 137);
-    private final static Color mirrorColor = Color.rgb(70, 141, 246);
+    private final static Color BACKGROUND_COLOR = Color.rgb(2, 6, 12);
+    private final static Color SHAPE_COLOR = Color.rgb(199, 111, 243);
+    private final static Color ABSORBER_COLOR = Color.rgb(126, 252, 137);
+    private final static Color MIRROR_COLOR = Color.rgb(70, 141, 246);
 
-    private final static Color shapeDrawingColor = Color.rgb(239, 84, 84);
-    private final static Color normalColor = shapeColor;
+    private final static Color SHAPE_DRAWING_COLOR = Color.rgb(239, 84, 84);
+    private final static Color NORMAL_COLOR = SHAPE_COLOR;
 
-    private final static Color selectedColor = Color.WHITE;
-    private final static Color hoveredColor = Color.rgb(210, 210, 210);
+    private final static Color SELECTED_COLOR = Color.WHITE;
+    private final static Color HOVERED_COLOR = Color.rgb(210, 210, 210);
 
 
     // start method to initialize everything and start the editor
@@ -159,10 +160,10 @@ public class Editor {
         mirror.setToggleGroup(group);
 
         try {
-            source.setGraphic(new ImageView(new Image(new FileInputStream("Resources/images/Source.png"), 80, 80, false, false)));
-            absorber.setGraphic(new ImageView(new Image(new FileInputStream("Resources/images/Absorber.png"), 80, 80, false, false)));
-            mirror.setGraphic(new ImageView(new Image(new FileInputStream("Resources/images/Mirror.png"), 80, 80, false, false)));
-            shape.setGraphic(new ImageView(new Image(new FileInputStream("Resources/images/Shape.png"), 80, 80, false, false)));
+            source.setGraphic(new ImageView(new Image(new FileInputStream("src/application/Resources/images/Source.png"), 80, 80, false, false)));
+            absorber.setGraphic(new ImageView(new Image(new FileInputStream("src/application/Resources/images/Absorber.png"), 80, 80, false, false)));
+            mirror.setGraphic(new ImageView(new Image(new FileInputStream("src/application/Resources/images/Mirror.png"), 80, 80, false, false)));
+            shape.setGraphic(new ImageView(new Image(new FileInputStream("src/application/Resources/images/Shape.png"), 80, 80, false, false)));
         } catch (FileNotFoundException ignored) {}
 
         // initialisation methods
@@ -252,6 +253,16 @@ public class Editor {
         menuBar.getMenus().get(0).getItems().add(load);
     }
 
+    @FXML
+    private void minimize() {
+        Main.minimize();
+    }
+
+    @FXML
+    private void exit() {
+        Main.exit();
+    }
+
     /*
     COMPONENT PANEL
      */
@@ -263,45 +274,37 @@ public class Editor {
         // adding the component to the component panel
         GridPane gridPane = new GridPane();
         Text text = new Text(component.getName());
+        text.getStyleClass().add("text");
 
         ToggleButton toggleButton = new ToggleButton();
-        toggleButton.setStyle("-fx-background-color: transparent");
-        try {
-            ImageView visible = new ImageView(new Image(new FileInputStream("Resources/images/visible.png"),
-                    20, 20, true, true));
-            ImageView invisible = new ImageView(new Image(new FileInputStream("Resources/images/invisible.png"),
-                    20, 20, true, true));
+        toggleButton.getStyleClass().add("visibility-button");
+        toggleButton.selectedProperty().addListener((c, o, o1) -> {
+            component.setVisibility(!o1);
 
-            toggleButton.setGraphic(visible);
-            toggleButton.selectedProperty().addListener((c, o, o1) -> {
-                component.setVisibility(!o1);
+            if (o1) {
+                visibleComponents.remove(component);
 
-                if (o1) {
-                    toggleButton.setGraphic(invisible);
-                    visibleComponents.remove(component);
+                if (component == selectedComponent) {
+                    selectedComponent = null;
+                    selectedPoint = null;
 
-                    if (component == selectedComponent) {
-                        selectedComponent = null;
-                        selectedPoint = null;
-                    }
-                } else {
-                    toggleButton.setGraphic(visible);
-                    visibleComponents.add(component);
+                    rotatable = false;
+                    rotating = false;
                 }
+            } else {
+                visibleComponents.add(component);
+            }
 
-                componentsModified = true;
-                updateCanvas();
-            });
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-        }
+            componentsModified = true;
+            updateCanvas();
+        });
 
         gridPane.add(text, 0, 0);
         gridPane.add(toggleButton, 1, 0);
 
-        gridPane.setPrefWidth(accordion.getPrefWidth());
+        gridPane.setPrefWidth(0);
         ColumnConstraints col1 = new ColumnConstraints();
-        col1.setPercentWidth(80);
+        col1.setPercentWidth(85);
         gridPane.getColumnConstraints().add(col1);
 
         gridPaneComponentHashMap.put(gridPane, component);
@@ -661,7 +664,7 @@ public class Editor {
                         double distance = Math.sqrt(dx * dx + dy * dy);
 
                         // checking that the user has pressed inside the wheel
-                        if (Math.abs(distance - rotateWheelWidth / 2) < 5) {
+                        if (Math.abs(distance - ROTATE_WHEEL_WIDTH / 2) < 5) {
                             double relativeAngle = Ray.angleTo(rotatePoint, new Point(e.getX(), e.getY()));
                             if (selectedComponent instanceof Source source) {
                                 rotateAngle = source.getBeam().getInitialRay().getAngle() - relativeAngle;
@@ -773,7 +776,7 @@ public class Editor {
                 }
             } else if (component instanceof LineComponent lineComponent) {
                 double distance = Point.distance(mousedPoint, lineComponent.getEdge());
-                if (distance < maxDistanceSelect) {
+                if (distance < MAX_DISTANCE_SELECT) {
                     clickedComponents.add(component);
                     distances.put(component, distance);
                     highest = Math.max(highest, 1);
@@ -782,7 +785,7 @@ public class Editor {
                 for (LightComponent lightComponent: source.getBeam().getLightComponents()) {
                     if (lightComponent instanceof LightRay lightRay) {
                         double distance = Point.distance(mousedPoint, lightRay);
-                        if (distance < maxDistanceSelect * 0.5) {
+                        if (distance < MAX_DISTANCE_SELECT * 0.5) {
                             clickedComponents.add(component);
                             distances.put(component, distance);
                             highest = 2;
@@ -790,7 +793,7 @@ public class Editor {
                         }
                     } else if (lightComponent instanceof LightSegment lightSegment) {
                         double distance = Point.distance(mousedPoint, lightSegment);
-                        if (distance < maxDistanceSelect * 0.5) {
+                        if (distance < MAX_DISTANCE_SELECT * 0.5) {
                             clickedComponents.add(component);
                             distances.put(component, distance);
                             highest = 2;
@@ -849,7 +852,7 @@ public class Editor {
         Point clickedPoint = new Point(e.getX(), e.getY());
         if (clickedComponent instanceof Shape shape) {
             for (Point point: shape.getVertexes()) {
-                if (Point.distance(point, clickedPoint) < maxDistanceSelect) {
+                if (Point.distance(point, clickedPoint) < MAX_DISTANCE_SELECT) {
                     shapeLayoutX.setDisable(false);
                     shapeLayoutY.setDisable(false);
                     lineComponentLayoutX.setDisable(true);
@@ -859,9 +862,9 @@ public class Editor {
             }
         } else if (clickedComponent instanceof LineComponent lineComponent) {
             Point point = null;
-            if (Point.distance(lineComponent.getEdge().getStart(), clickedPoint) < maxDistanceSelect) {
+            if (Point.distance(lineComponent.getEdge().getStart(), clickedPoint) < MAX_DISTANCE_SELECT) {
                 point = lineComponent.getEdge().getStart();
-            } else if (Point.distance(lineComponent.getEdge().getEnd(), clickedPoint) < maxDistanceSelect) {
+            } else if (Point.distance(lineComponent.getEdge().getEnd(), clickedPoint) < MAX_DISTANCE_SELECT) {
                 point = lineComponent.getEdge().getEnd();
             }
 
@@ -873,7 +876,7 @@ public class Editor {
                 return point;
             }
         } else if (clickedComponent instanceof Source source) {
-            if (Point.distance(source.getBeam().getInitialRay().getStart(), clickedPoint) < maxDistanceSelect) {
+            if (Point.distance(source.getBeam().getInitialRay().getStart(), clickedPoint) < MAX_DISTANCE_SELECT) {
                 shapeLayoutX.setDisable(true);
                 shapeLayoutY.setDisable(true);
                 lineComponentLayoutX.setDisable(true);
@@ -905,7 +908,7 @@ public class Editor {
     }
 
     private void drawCanvas() {
-        graphicsContext.setFill(backgroundColor);
+        graphicsContext.setFill(BACKGROUND_COLOR);
         graphicsContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
         for (Component component: visibleComponents) {  // draw components
@@ -929,19 +932,19 @@ public class Editor {
 
             // setting the color of the component to be drawn
             if (component == selectedComponent) {
-                graphicsContext.setStroke(selectedColor);
+                graphicsContext.setStroke(SELECTED_COLOR);
             } else if (component == hoveredComponent) {
-                graphicsContext.setStroke(hoveredColor);
+                graphicsContext.setStroke(HOVERED_COLOR);
             } else {
                 if (component instanceof Shape) {
-                    graphicsContext.setStroke(shapeColor);
+                    graphicsContext.setStroke(SHAPE_COLOR);
                 } else if (component instanceof Source source) {
                     graphicsContext.setStroke(source.getBeam().getColor());
                 } else if (component instanceof LineComponent lineComponent) {
                     if (lineComponent.getEdge().getType() == Edge.ABSORBER) {
-                        graphicsContext.setStroke(absorberColor);
+                        graphicsContext.setStroke(ABSORBER_COLOR);
                     } else if (lineComponent.getEdge().getType() == Edge.REFLECTOR) {
-                        graphicsContext.setStroke(mirrorColor);
+                        graphicsContext.setStroke(MIRROR_COLOR);
                     }
                 }
             }
@@ -951,7 +954,7 @@ public class Editor {
 
             // drawing the normals if the component is a source
             if (component instanceof Source source) {
-                graphicsContext.setStroke(normalColor);
+                graphicsContext.setStroke(NORMAL_COLOR);
                 graphicsContext.setLineDashes(2);
                 for (LightComponent lightComponent: source.getBeam().getLightComponents()) {
                     Normal normal = lightComponent.getNormal();
@@ -968,7 +971,7 @@ public class Editor {
 
         // drawing the rotate-wheel if the selected component is a source or a line component
         if (rotatable) {
-            graphicsContext.setStroke(shapeColor);
+            graphicsContext.setStroke(SHAPE_COLOR);
             graphicsContext.beginPath();
 
             Point point;
@@ -981,8 +984,8 @@ public class Editor {
             }
 
             graphicsContext.setLineWidth(2);
-            graphicsContext.strokeArc(point.getX() - rotateWheelWidth / 2, point.getY() - rotateWheelWidth / 2,
-                    rotateWheelWidth, rotateWheelWidth, 0, 360, ArcType.OPEN);
+            graphicsContext.strokeArc(point.getX() - ROTATE_WHEEL_WIDTH / 2, point.getY() - ROTATE_WHEEL_WIDTH / 2,
+                    ROTATE_WHEEL_WIDTH, ROTATE_WHEEL_WIDTH, 0, 360, ArcType.OPEN);
             graphicsContext.closePath();
             graphicsContext.setLineWidth(1);
         }
@@ -996,19 +999,19 @@ public class Editor {
         graphicsContext.beginPath();
         Point newPoint = new Point(e.getX(), e.getY());
         if (absorber.isSelected() && startPoint != null) {
-            graphicsContext.setStroke(absorberColor);
+            graphicsContext.setStroke(ABSORBER_COLOR);
 
             if (!startPoint.equals(newPoint)) {
                 drawSegment(new Segment(startPoint, newPoint));
             }
         } else if (mirror.isSelected() && startPoint != null) {
-            graphicsContext.setStroke(mirrorColor);
+            graphicsContext.setStroke(MIRROR_COLOR);
 
             if (!startPoint.equals(newPoint)) {
                 drawSegment(new Segment(startPoint, newPoint));
             }
         } else if (shape.isSelected() && vertices.size() != 0) {
-            graphicsContext.setStroke(shapeDrawingColor);
+            graphicsContext.setStroke(SHAPE_DRAWING_COLOR);
 
             ArrayList<Point> points = new ArrayList<>(vertices);
             boolean contains = false;
@@ -1046,10 +1049,10 @@ public class Editor {
 
     private void drawNormal(Segment edge, Point intersection) {
         // the coordinates of the start and end points of the normal displayed
-        double startX = intersection.getX() + normalWidth * Math.cos(Math.toRadians(edge.getAngle() + 90));
-        double startY = intersection.getY() + normalWidth * Math.sin(Math.toRadians(edge.getAngle() + 90));
-        double endX = intersection.getX() - normalWidth * Math.cos(Math.toRadians(edge.getAngle() + 90));
-        double endY = intersection.getY() - normalWidth * Math.sin(Math.toRadians(edge.getAngle() + 90));
+        double startX = intersection.getX() + NORMAL_WIDTH * Math.cos(Math.toRadians(edge.getAngle() + 90));
+        double startY = intersection.getY() + NORMAL_WIDTH * Math.sin(Math.toRadians(edge.getAngle() + 90));
+        double endX = intersection.getX() - NORMAL_WIDTH * Math.cos(Math.toRadians(edge.getAngle() + 90));
+        double endY = intersection.getY() - NORMAL_WIDTH * Math.sin(Math.toRadians(edge.getAngle() + 90));
 
         // drawing a dashed line to represent the normal
         graphicsContext.moveTo(startX, startY);

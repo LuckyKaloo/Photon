@@ -24,31 +24,31 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class SplashScreen {
-    private final static int numPetals = 8;
-    private final static double multiplierAngle = 360.0 / numPetals;
+    private final static int NUM_PETALS = 8;
+    private final static double MULTIPLIER_ANGLE = 360.0 / NUM_PETALS;
 
-    private final static double flowerWidth = 270;
-    private final static double petalWidth = 26;
-    private final static double initialPetalLength = 87;
-    private final static double finalPetalLength = 78;
+    private final static double FLOWER_WIDTH = 270;
+    private final static double PETAL_WIDTH = 26;
+    private final static double INITIAL_PETAL_LENGTH = 87;
+    private final static double FINAL_PETAL_LENGTH = 78;
 
-    private final static double center = flowerWidth / 2;
-    private final static double distanceContract = center - initialPetalLength;
+    private final static double CENTER = FLOWER_WIDTH / 2;
+    private final static double DISTANCE_CONTRACT = CENTER - INITIAL_PETAL_LENGTH;
 
-    private final static Duration bloomDuration = Duration.millis(700);
-    private final static double x1 = 0.503;
-    private final static double y1 = 0.148;
-    private final static Interpolator interpolator = Interpolator.SPLINE(x1, y1, 1-x1, 1-y1);
+    private final static Duration BLOOM_DURATION = Duration.millis(700);
+    private final static double X1 = 0.503;
+    private final static double Y1 = 0.148;
+    private final static Interpolator INTERPOLATOR = Interpolator.SPLINE(X1, Y1, 1- X1, 1- Y1);
 
-    private final static double fontSize = 200;
+    private final static double FONT_SIZE = 200;
 
-    private final static double progressBarHeight = 5;
-    private final static double progressBarLength = 1000;
+    private final static double PROGRESS_BAR_HEIGHT = 5;
+    private final static double PROGRESS_BAR_LENGTH = 1000;
 
-    private final static double hboxSpacing = 70;
-    private final static double vboxSpacing = 80;
+    private final static double HBOX_SPACING = 70;
+    private final static double VBOX_SPACING = 80;
 
-    private final static Color[] colors = new Color[]{
+    private final static Color[] COLORS = new Color[]{
             Color.web("#f47777"),
             Color.web("#ffb660"),
             Color.web("#fbff76"),
@@ -57,48 +57,48 @@ public class SplashScreen {
             Color.web("#79acff"),
             Color.web("#a697ff"),
             Color.web("#f894f8")};
-    private final static String backgroundColor = "#0a0012";
-    private final static Color textColor = Color.rgb(247, 251, 255);
+    private final static String BACKGROUND_COLOR = "#0a0012";
+    private final static Color TEXT_COLOR = Color.rgb(247, 251, 255);
 
-    private final static Timeline[] contractTimelines = new Timeline[numPetals];
+    private final static Timeline[] CONTRACT_TIMELINES = new Timeline[NUM_PETALS];
 
-    private final static Duration timedDuration = Duration.millis(2000);
+    private final static Duration TIMED_DURATION = Duration.millis(1);
 
 
     public static Scene generateScene() {
         // adding the flower rainbow
         AnchorPane flower = new AnchorPane();
-        flower.setMinSize(flowerWidth,  flowerWidth);
-        flower.setPrefSize(flowerWidth,  flowerWidth);
-        flower.setMaxSize(flowerWidth,  flowerWidth);
+        flower.setMinSize(FLOWER_WIDTH, FLOWER_WIDTH);
+        flower.setPrefSize(FLOWER_WIDTH, FLOWER_WIDTH);
+        flower.setMaxSize(FLOWER_WIDTH, FLOWER_WIDTH);
 
-        for (int i = 0; i < numPetals; i++) {
-            double angle = multiplierAngle * i + 180;
+        for (int i = 0; i < NUM_PETALS; i++) {
+            double angle = MULTIPLIER_ANGLE * i + 180;
 
             Region region = new Region();
-            region.setPrefHeight(petalWidth);
-            region.setPrefWidth(initialPetalLength);
-            Color color = colors[i];
+            region.setPrefHeight(PETAL_WIDTH);
+            region.setPrefWidth(INITIAL_PETAL_LENGTH);
+            Color color = COLORS[i];
             region.setStyle("-fx-background-color: rgb(" +
                     (color.getRed() * 255) + ", " + (color.getGreen() * 255) + ", " + (color.getBlue() * 255) + ");" +
-                    " -fx-border-radius:" + petalWidth / 2 + ";" +
-                    " -fx-background-radius:" + petalWidth / 2 + ";");
+                    " -fx-border-radius:" + PETAL_WIDTH / 2 + ";" +
+                    " -fx-background-radius:" + PETAL_WIDTH / 2 + ";");
 
-            region.setLayoutX(center + distanceContract);
-            region.setLayoutY(center - petalWidth / 2);
+            region.setLayoutX(CENTER + DISTANCE_CONTRACT);
+            region.setLayoutY(CENTER - PETAL_WIDTH / 2);
 
-            Rotate rotate = new Rotate(angle, -distanceContract, petalWidth / 2);
+            Rotate rotate = new Rotate(angle, -DISTANCE_CONTRACT, PETAL_WIDTH / 2);
             region.getTransforms().add(rotate);
 
-            Timeline contract = new Timeline(new KeyFrame(bloomDuration,
-                    new KeyValue(region.prefWidthProperty(), finalPetalLength, interpolator),
-                    new KeyValue(region.layoutXProperty(), center + distanceContract, interpolator),
-                    new KeyValue(rotate.pivotXProperty(), -distanceContract, interpolator)));
+            Timeline contract = new Timeline(new KeyFrame(BLOOM_DURATION,
+                    new KeyValue(region.prefWidthProperty(), FINAL_PETAL_LENGTH, INTERPOLATOR),
+                    new KeyValue(region.layoutXProperty(), CENTER + DISTANCE_CONTRACT, INTERPOLATOR),
+                    new KeyValue(rotate.pivotXProperty(), -DISTANCE_CONTRACT, INTERPOLATOR)));
 
             contract.setAutoReverse(true);
             contract.setCycleCount(Animation.INDEFINITE);
 
-            contractTimelines[i] = contract;
+            CONTRACT_TIMELINES[i] = contract;
 
             flower.getChildren().add(region);
         }
@@ -106,29 +106,29 @@ public class SplashScreen {
         // adding the text to say the name of the program
         Text text = new Text("Photon");
         try {
-            text.setFont(Font.loadFont(new FileInputStream("Resources/VarelaRound-Regular.ttf"), fontSize));
-            text.setFill(textColor);
+            text.setFont(Font.loadFont(new FileInputStream("src/application/Resources/VarelaRound-Regular.ttf"), FONT_SIZE));
+            text.setFill(TEXT_COLOR);
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         }
 
         HBox hbox = new HBox();
         hbox.setAlignment(Pos.CENTER);
-        hbox.setSpacing(hboxSpacing);
+        hbox.setSpacing(HBOX_SPACING);
         hbox.getChildren().addAll(flower, text);
 
 
         MFXProgressBar progressBar = new MFXProgressBar(0);
         progressBar.setId("progress-bar");
-        progressBar.setPrefSize(progressBarLength, progressBarHeight);
+        progressBar.setPrefSize(PROGRESS_BAR_LENGTH, PROGRESS_BAR_HEIGHT);
 
 
         StringProperty css = new SimpleStringProperty();
-        double portion = 1.0 / colors.length;
-        ArrayList<Color> colorList = new ArrayList<>(Arrays.asList(colors));
+        double portion = 1.0 / COLORS.length;
+        ArrayList<Color> colorList = new ArrayList<>(Arrays.asList(COLORS));
         Animation animation = new Transition() {
             {
-                setCycleDuration(timedDuration);
+                setCycleDuration(TIMED_DURATION);
             }
 
             @Override
@@ -176,8 +176,8 @@ public class SplashScreen {
 
         VBox vbox = new VBox();
         vbox.setAlignment(Pos.CENTER);
-        vbox.setSpacing(vboxSpacing);
-        vbox.setStyle("-fx-background-color: " + backgroundColor);
+        vbox.setSpacing(VBOX_SPACING);
+        vbox.setStyle("-fx-background-color: " + BACKGROUND_COLOR);
         vbox.getChildren().addAll(hbox, progressBar);
 
 
@@ -209,14 +209,14 @@ public class SplashScreen {
     }
 
     public static void play() {
-        for (int i = 0; i < numPetals; i++) {
-            contractTimelines[i].playFrom(bloomDuration.multiply(1.0 * i / numPetals));
+        for (int i = 0; i < NUM_PETALS; i++) {
+            CONTRACT_TIMELINES[i].playFrom(BLOOM_DURATION.multiply(1.0 * i / NUM_PETALS));
         }
     }
 
     public static void finish() {
-        for (int i = 0; i < numPetals; i++) {
-            contractTimelines[i].stop();
+        for (int i = 0; i < NUM_PETALS; i++) {
+            CONTRACT_TIMELINES[i].stop();
         }
     }
 }

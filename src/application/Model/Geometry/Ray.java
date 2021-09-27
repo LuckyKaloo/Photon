@@ -7,8 +7,7 @@ public class Ray {
     protected double gradient;
     protected double yIntercept;
 
-    Ray() {
-    }
+    public Ray() {}
 
     public Ray(double angle, Point start) {
         this.angle = angle % 360;

@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="Material_Deep_Ocean">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../../../Material_Deep_Ocean.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+    <jarDirectory url="jar://$PROJECT_DIR$/../../../../Material_Deep_Ocean.jar!/" recursive="false" />
+  </library>
+</component>
