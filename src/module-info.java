@@ -6,7 +6,6 @@ module Project {
     requires reactfx;
     requires MaterialFX;
 
-    opens application;
     opens application.Model.Components;
     opens application.Model.Geometry;
     opens application.Controller;

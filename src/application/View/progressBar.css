@@ -1,9 +1,9 @@
 .root {
-    gradient-info: #000000;
+    -gradient-info: #000000;
 }
 
 #progress-bar .bar1 {
-    -fx-fill: gradient-info;
+    -fx-fill: -gradient-info;
 }
 
 #progress-bar .track {

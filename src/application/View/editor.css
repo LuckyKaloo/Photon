@@ -1,19 +1,13 @@
 .root {
     -title-color: #100c14;
     -background-color: #0f111a;
-    -foreground-color: #8f9382;
-    -primary-text-color: #c3cee3;
-    -secondary-text-color: #9ba9ce;
-    -selection-background-color: #222533;
-    -selection-foreground-color: #ffffff;
+    -text-color: #c3cee3;
+    -background-selected-color: #222533;
     -button-color: #191a21;
-    -list-backgrund-color: #181a1f;
     -disabled-color: #464b5d;
-    -contrast-color: #090b10;
     -selected-button-color: #21242f;
+    -highlight-color: #23273e;
     -separator-color: #3b3f51;
-    -highlight-color: #1f2233;
-    -tree-selected-color: #3f4771;
     -accent-color: #84ffff;
 }
 
@@ -21,22 +15,17 @@
 /*
 GENERAL CONTAINERS
  */
-
-.main-container {
-    -fx-border-color: -separator-color;
-}
-
 .main-container, .sub-container, .list-cell {
     -fx-background-color: -background-color;
     -fx-background-insets: 0;
 }
 
 .label {
-    -fx-text-fill: -primary-text-color;
+    -fx-text-fill: -text-color;
 }
 
 .text {
-    -fx-fill: -primary-text-color;
+    -fx-fill: -text-color;
 }
 
 
@@ -50,8 +39,20 @@ TOP PANEL
     -fx-background-insets: 0;
 }
 
+.menu:hover, .menu:showing {
+    -fx-background-color: -background-selected-color;
+}
+
+.context-menu {
+    -fx-background-color: -background-color;
+}
+
+.menu-item {
+    -fx-background-color: -background-color;
+}
+
 .menu-item:hover, .menu-item:selected {
-    -fx-background-color: -selection-background-color;
+    -fx-background-color: -background-selected-color;
 }
 
 .dash {
@@ -61,7 +62,7 @@ TOP PANEL
 }
 
 .dash:hover {
-    -fx-background-color: -selection-background-color;
+    -fx-background-color: -background-selected-color;
 }
 
 .cross {
@@ -82,28 +83,28 @@ LEFT PANEL
 
 .titled-pane {
     -fx-background-insets: 0;
-    -fx-text-fill: -primary-text-color;
+    -fx-text-fill: -text-color;
 }
 
 .titled-pane > .title {
-    -fx-background-color: -backgrund-color;
+    -fx-background-color: -background-color;
     -fx-text-fill: #d0d4ec;
     -fx-background-insets: 0;
 }
 
 .titled-pane:focused > .title {
-    -fx-background-color: -selection-background-color;
+    -fx-background-color: -background-selected-color;
 }
 
 .titled-pane > .title > .arrow-button .arrow {
     -fx-effect: null;
-    -fx-background-color: -primary-text-color;
+    -fx-background-color: -text-color;
     -fx-background-insets: 0;
     -fx-shape: "M 186.26367 158.52734 C 164.65398 158.34069 143.14729 167.48481 128.10742 185.40625 C 101.36987 217.26659 105.49513 264.44214 137.35547 291.17969 L 336.12695 457.99023 C 349.52591 469.23479 365.63224 474.99825 381.78906 475.55859 C 381.91861 475.56393 382.04815 475.5676 382.17773 475.57227 C 382.99762 475.59645 383.81704 475.61207 384.63672 475.60938 C 385.45575 475.61204 386.27452 475.59643 387.09375 475.57227 C 387.22333 475.5676 387.35287 475.56393 387.48242 475.55859 C 403.63924 474.99825 419.74557 469.23479 433.14453 457.99023 L 631.91602 291.17969 C 663.77635 264.44214 667.90161 217.26659 641.16406 185.40625 C 614.42651 153.54591 567.25096 149.42261 535.39062 176.16016 L 384.63672 302.67383 L 233.88086 176.16016 C 219.94196 164.46248 203.07121 158.67252 186.26367 158.52734 z ";
 }
 
 .titled-pane:focused > .title > .arrow-button .arrow {
-    -fx-background-color: -primary-text-color;
+    -fx-background-color: -text-color;
     -fx-background-insets: 0;
 }
 
@@ -112,7 +113,7 @@ LEFT PANEL
 }
 
 .list-cell:selected {
-    -fx-background-color: -selection-background-color;
+    -fx-background-color: -background-selected-color;
 }
 
 .visibility-button {
@@ -136,6 +137,9 @@ BOTTOM PANEL
 
 
 .component-button {
+    -fx-pref-width: 60px;
+    -fx-pref-height: 60px;
+
     -fx-background-color: -button-color;
     -fx-border-radius: 15;
     -fx-background-radius: 15;
@@ -152,20 +156,45 @@ RIGHT PANEL
 
 
 .region {
-    -fx-background-color: -selection-background-color;
+    -fx-background-color: -background-selected-color;
 }
 
 .color-picker {
-    -fx-background-color: -tree-selected-color;
+    -fx-background-color: -highlight-color;
 }
 
 .mfx-text-field {
-    -fx-text-fill: -primary-text-color;
-    -mfx-unfocused-line-color: -tree-selected-color;
+    -fx-text-fill: -text-color;
+    -mfx-unfocused-line-color: -highlight-color;
     -mfx-line-color: -accent-color;
 }
 
 .mfx-text-field:disabled {
     -mfx-line-color: -disabled-color;
     -mfx-unfocused-line-color: -disabled-color;
+}
+
+.color-picker {
+    -fx-background-color: -highlight-color;
+}
+
+.color-picker > .arrow-button .arrow {
+    -fx-effect: null;
+    -fx-background-color: -text-color;
+    -fx-background-insets: 0;
+    -fx-rotate: 90;
+    -fx-shape: "M 186.26367 158.52734 C 164.65398 158.34069 143.14729 167.48481 128.10742 185.40625 C 101.36987 217.26659 105.49513 264.44214 137.35547 291.17969 L 336.12695 457.99023 C 349.52591 469.23479 365.63224 474.99825 381.78906 475.55859 C 381.91861 475.56393 382.04815 475.5676 382.17773 475.57227 C 382.99762 475.59645 383.81704 475.61207 384.63672 475.60938 C 385.45575 475.61204 386.27452 475.59643 387.09375 475.57227 C 387.22333 475.5676 387.35287 475.56393 387.48242 475.55859 C 403.63924 474.99825 419.74557 469.23479 433.14453 457.99023 L 631.91602 291.17969 C 663.77635 264.44214 667.90161 217.26659 641.16406 185.40625 C 614.42651 153.54591 567.25096 149.42261 535.39062 176.16016 L 384.63672 302.67383 L 233.88086 176.16016 C 219.94196 164.46248 203.07121 158.67252 186.26367 158.52734 z ";
+}
+
+.color-picker > .arrow-button .arrow {
+    -fx-background-color: -text-color;
+    -fx-background-insets: 0;
+}
+
+.color-picker .color-palette {
+    -fx-background-color: -background-selected-color;
+}
+
+.color-picker:showing .arrow-button .arrow {
+    -fx-rotate: 0;
 }

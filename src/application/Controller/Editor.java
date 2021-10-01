@@ -1,6 +1,5 @@
 package application.Controller;
 
-import application.Main;
 import application.Model.Components.*;
 import application.Model.Geometry.Point;
 import application.Model.Geometry.Ray;
@@ -10,6 +9,8 @@ import application.Model.Light.LightRay;
 import application.Model.Light.LightSegment;
 import application.Model.Light.Normal;
 import io.github.palexdev.materialfx.controls.MFXTextField;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
@@ -118,28 +119,21 @@ public class Editor {
     private final HashMap<Component, GridPane> componentGridPaneHashMap = new HashMap<>();
     private final HashMap<Component, Text> componentTextHashMap = new HashMap<>();
 
+    private final StringProperty css = new SimpleStringProperty();
+
 
     private final static int MAX_DISTANCE_SELECT = 6;
     private final static int NORMAL_WIDTH = 5;
     private final static double ROTATE_WHEEL_WIDTH = 50;
 
-    // colors
-    private final static Color BACKGROUND_COLOR = Color.rgb(2, 6, 12);
-    private final static Color SHAPE_COLOR = Color.rgb(199, 111, 243);
-    private final static Color ABSORBER_COLOR = Color.rgb(126, 252, 137);
-    private final static Color MIRROR_COLOR = Color.rgb(70, 141, 246);
-
-    private final static Color SHAPE_DRAWING_COLOR = Color.rgb(239, 84, 84);
-    private final static Color NORMAL_COLOR = SHAPE_COLOR;
-
-    private final static Color SELECTED_COLOR = Color.WHITE;
-    private final static Color HOVERED_COLOR = Color.rgb(210, 210, 210);
+    private final static int COMPONENT_BUTTON_SIZE = 60;
 
 
     // start method to initialize everything and start the editor
     // cannot use initialize method because the panes are not set to the correct size yet
     // need to wait for the FXML file to be loaded
     public void start() {
+        borderPane.styleProperty().bind(css);
         graphicsContext = canvas.getGraphicsContext2D();
         graphicsContext.setLineWidth(1);
 
@@ -160,10 +154,14 @@ public class Editor {
         mirror.setToggleGroup(group);
 
         try {
-            source.setGraphic(new ImageView(new Image(new FileInputStream("src/application/Resources/images/Source.png"), 80, 80, false, false)));
-            absorber.setGraphic(new ImageView(new Image(new FileInputStream("src/application/Resources/images/Absorber.png"), 80, 80, false, false)));
-            mirror.setGraphic(new ImageView(new Image(new FileInputStream("src/application/Resources/images/Mirror.png"), 80, 80, false, false)));
-            shape.setGraphic(new ImageView(new Image(new FileInputStream("src/application/Resources/images/Shape.png"), 80, 80, false, false)));
+            source.setGraphic(new ImageView(new Image(new FileInputStream("src/application/Resources/images/Source.png"),
+                    COMPONENT_BUTTON_SIZE, COMPONENT_BUTTON_SIZE, false, false)));
+            absorber.setGraphic(new ImageView(new Image(new FileInputStream("src/application/Resources/images/Absorber.png"),
+                    COMPONENT_BUTTON_SIZE, COMPONENT_BUTTON_SIZE, false, false)));
+            mirror.setGraphic(new ImageView(new Image(new FileInputStream("src/application/Resources/images/Mirror.png"),
+                    COMPONENT_BUTTON_SIZE, COMPONENT_BUTTON_SIZE, false, false)));
+            shape.setGraphic(new ImageView(new Image(new FileInputStream("src/application/Resources/images/Shape.png"),
+                    COMPONENT_BUTTON_SIZE, COMPONENT_BUTTON_SIZE, false, false)));
         } catch (FileNotFoundException ignored) {}
 
         // initialisation methods
@@ -174,6 +172,10 @@ public class Editor {
 
         componentsModified = true;
         updateCanvas();
+    }
+
+    public void setCss(String css) {
+        this.css.setValue(css);
     }
 
     /*
@@ -213,6 +215,10 @@ public class Editor {
                 removedComponents.clear();
                 visibleComponents.clear();
                 components.clear();
+                sourceListView.getItems().clear();
+                mirrorListView.getItems().clear();
+                absorberListView.getItems().clear();
+                shapeListView.getItems().clear();
 
                 try {
                     String data = Files.readString(Paths.get(selectedFile.toURI()));
@@ -251,16 +257,20 @@ public class Editor {
             componentsModified = true;
         });
         menuBar.getMenus().get(0).getItems().add(load);
+
+        MenuItem settings = new MenuItem("Color Settings");
+        settings.setOnAction(e -> Main.showSettings());
+        menuBar.getMenus().get(0).getItems().add(settings);
     }
 
     @FXML
     private void minimize() {
-        Main.minimize();
+        Main.minimizeEditor();
     }
 
     @FXML
     private void exit() {
-        Main.exit();
+        Main.exitEditor();
     }
 
     /*
@@ -907,8 +917,8 @@ public class Editor {
         drawCanvas();
     }
 
-    private void drawCanvas() {
-        graphicsContext.setFill(BACKGROUND_COLOR);
+    void drawCanvas() {
+        graphicsContext.setFill(Color.web(Main.PROPERTIES.getProperty("canvasColor")));
         graphicsContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
         for (Component component: visibleComponents) {  // draw components
@@ -932,19 +942,19 @@ public class Editor {
 
             // setting the color of the component to be drawn
             if (component == selectedComponent) {
-                graphicsContext.setStroke(SELECTED_COLOR);
+                graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("selectedColor")));
             } else if (component == hoveredComponent) {
-                graphicsContext.setStroke(HOVERED_COLOR);
+                graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("hoveredColor")));
             } else {
                 if (component instanceof Shape) {
-                    graphicsContext.setStroke(SHAPE_COLOR);
+                    graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("shapeColor")));
                 } else if (component instanceof Source source) {
                     graphicsContext.setStroke(source.getBeam().getColor());
                 } else if (component instanceof LineComponent lineComponent) {
                     if (lineComponent.getEdge().getType() == Edge.ABSORBER) {
-                        graphicsContext.setStroke(ABSORBER_COLOR);
+                        graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("absorberColor")));
                     } else if (lineComponent.getEdge().getType() == Edge.REFLECTOR) {
-                        graphicsContext.setStroke(MIRROR_COLOR);
+                        graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("mirrorColor")));
                     }
                 }
             }
@@ -954,7 +964,7 @@ public class Editor {
 
             // drawing the normals if the component is a source
             if (component instanceof Source source) {
-                graphicsContext.setStroke(NORMAL_COLOR);
+                graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("shapeColor")));
                 graphicsContext.setLineDashes(2);
                 for (LightComponent lightComponent: source.getBeam().getLightComponents()) {
                     Normal normal = lightComponent.getNormal();
@@ -971,7 +981,7 @@ public class Editor {
 
         // drawing the rotate-wheel if the selected component is a source or a line component
         if (rotatable) {
-            graphicsContext.setStroke(SHAPE_COLOR);
+            graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("shapeColor")));
             graphicsContext.beginPath();
 
             Point point;
@@ -999,19 +1009,19 @@ public class Editor {
         graphicsContext.beginPath();
         Point newPoint = new Point(e.getX(), e.getY());
         if (absorber.isSelected() && startPoint != null) {
-            graphicsContext.setStroke(ABSORBER_COLOR);
+            graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("absorberColor")));
 
             if (!startPoint.equals(newPoint)) {
                 drawSegment(new Segment(startPoint, newPoint));
             }
         } else if (mirror.isSelected() && startPoint != null) {
-            graphicsContext.setStroke(MIRROR_COLOR);
+            graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("mirrorColor")));
 
             if (!startPoint.equals(newPoint)) {
                 drawSegment(new Segment(startPoint, newPoint));
             }
         } else if (shape.isSelected() && vertices.size() != 0) {
-            graphicsContext.setStroke(SHAPE_DRAWING_COLOR);
+            graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("drawingColor")));
 
             ArrayList<Point> points = new ArrayList<>(vertices);
             boolean contains = false;

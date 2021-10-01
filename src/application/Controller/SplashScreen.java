@@ -1,6 +1,5 @@
 package application.Controller;
 
-import application.Main;
 import io.github.palexdev.materialfx.controls.MFXProgressBar;
 import javafx.animation.*;
 import javafx.beans.property.SimpleStringProperty;
