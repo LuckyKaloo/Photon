@@ -32,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Scanner;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -95,6 +96,8 @@ public class Editor {
     private ListView<GridPane> absorberListView;
     @FXML
     private ListView<GridPane> shapeListView;
+    @FXML
+    private Label fileName;
 
     // non FXML stuff
     private GraphicsContext graphicsContext;
@@ -115,12 +118,14 @@ public class Editor {
     private Point rotatePoint;
     private double rotateAngle;  // if the user is rotating a component, the initial angle that they started at
 
+    private final ArrayList<File> recentFiles = new ArrayList<>();
+    private File currentFile; // the current file that the user has opened
+
     private final HashMap<GridPane, Component> gridPaneComponentHashMap = new HashMap<>();
     private final HashMap<Component, GridPane> componentGridPaneHashMap = new HashMap<>();
     private final HashMap<Component, Text> componentTextHashMap = new HashMap<>();
 
     private final StringProperty css = new SimpleStringProperty();
-
 
     private final static int MAX_DISTANCE_SELECT = 6;
     private final static int NORMAL_WIDTH = 5;
@@ -164,6 +169,15 @@ public class Editor {
                     COMPONENT_BUTTON_SIZE, COMPONENT_BUTTON_SIZE, false, false)));
         } catch (FileNotFoundException ignored) {}
 
+        // loading files
+        try {
+            Scanner scanner = new Scanner(new File("src/application/Resources/recent_files.txt"));
+            while (scanner.hasNextLine()) {
+                recentFiles.add(new File(scanner.nextLine()));
+            }
+            scanner.close();
+        } catch (FileNotFoundException ignored) {}
+
         // initialisation methods
         initialiseKeyboardShortcuts();
         initialiseCanvasActions();
@@ -185,82 +199,130 @@ public class Editor {
     private void initialiseMenuBar() {
         MenuItem save = new MenuItem("Save");
         save.setOnAction(e -> {
+            if (currentFile != null) {
+                save(currentFile);
+            } else {
+                FileChooser fileChooser = new FileChooser();
+                Stage stage = new Stage();
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Photon Files", "*.phn"));
+                File selectedFile = fileChooser.showSaveDialog(stage);
+
+                save(selectedFile);
+            }
+        });
+        menuBar.getMenus().get(0).getItems().add(save);
+
+        MenuItem saveAs = new MenuItem("Save As");
+        saveAs.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
             Stage stage = new Stage();
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Photon Files", "*.phn"));
             File selectedFile = fileChooser.showSaveDialog(stage);
 
-            try {
-                FileWriter fileWriter = new FileWriter(selectedFile);
-                fileWriter.append("Canvas {\n\tWidth: ").append(String.valueOf(canvas.getWidth()))
-                        .append("\n\tHeight: ").append(String.valueOf(canvas.getHeight())).append("\n}\n");
-                for (Component component : components) {
-                    fileWriter.append(component.toData());
-                }
-                fileWriter.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            save(selectedFile);
         });
-        menuBar.getMenus().get(0).getItems().add(1, save);
+        menuBar.getMenus().get(0).getItems().add(1, saveAs);
 
-        MenuItem load = new MenuItem("Load");
-        load.setOnAction(e -> {
+        MenuItem open = new MenuItem("Open");
+        open.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
             Stage stage = new Stage();
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Photon Files", "*.phn"));
             File selectedFile = fileChooser.showOpenDialog(stage);
 
             if (selectedFile != null) {
-                removedComponents.clear();
-                visibleComponents.clear();
-                components.clear();
-                sourceListView.getItems().clear();
-                mirrorListView.getItems().clear();
-                absorberListView.getItems().clear();
-                shapeListView.getItems().clear();
-
-                try {
-                    String data = Files.readString(Paths.get(selectedFile.toURI()));
-                    Pattern pattern = Pattern.compile(".*\\{([^}]|\\n)*}");
-                    Matcher matcher = pattern.matcher(data);
-
-                    while (matcher.find()) {
-                        try {
-                            String line = matcher.group().replaceAll("[ \\t\\r\\f]", "");
-                            String[] lines = line.split("\n");
-                            if (lines[0].equals("Canvas{")) {
-                                if (!Pattern.matches("Width:.*", lines[1]) || !Pattern.matches("Height:.*", lines[2])) {
-                                    throw new IllegalArgumentException("Data for canvas is not valid!");
-                                }
-
-                                try {
-                                    canvas.setWidth(Double.parseDouble(lines[1].substring(6)));
-                                    canvas.setHeight(Double.parseDouble(lines[2].substring(7)));
-                                } catch (NumberFormatException ex) {
-                                    Alert alert = new Alert(Alert.AlertType.ERROR, "Data for canvas is not valid!");
-                                    alert.show();
-                                }
-                            } else {
-                                addComponent(Component.parseData(matcher.group()));
-                            }
-                        } catch (IllegalArgumentException ex) {
-                            Alert alert = new Alert(Alert.AlertType.ERROR, ex.getMessage());
-                            alert.show();
-                        }
-                    }
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+                open(selectedFile);
             }
 
             componentsModified = true;
         });
-        menuBar.getMenus().get(0).getItems().add(load);
+        menuBar.getMenus().get(0).getItems().add(open);
 
-        MenuItem settings = new MenuItem("Color Settings");
+        MenuItem openRecent = new MenuItem("Open Recent");
+        openRecent.setOnAction(e -> {
+            // help how to drop down menu
+        });
+
+        MenuItem settings = new MenuItem("Settings");
         settings.setOnAction(e -> Main.showSettings());
         menuBar.getMenus().get(0).getItems().add(settings);
+    }
+
+    private void save(File file) {
+        try {
+            FileWriter fileWriter = new FileWriter(file);
+            fileWriter.append("Canvas {\n\tWidth: ").append(String.valueOf(canvas.getWidth()))
+                    .append("\n\tHeight: ").append(String.valueOf(canvas.getHeight())).append("\n}\n");
+            for (Component component : components) {
+                fileWriter.append(component.toData());
+            }
+            fileWriter.close();
+
+            addFile(file);
+        } catch (IOException ignored) {}
+    }
+
+    private void addFile(File file) {
+        recentFiles.add(file);
+        if (recentFiles.size() > 10) {
+            recentFiles.remove(0);
+        }
+        try {
+            FileWriter fileWriter = new FileWriter("src/application/Resources/recent_files.txt");
+            for (File recentFile: recentFiles) {
+                fileWriter.append(recentFile.getAbsolutePath());
+            }
+            fileWriter.close();
+        } catch (IOException ignored) {}
+
+        fileName.setText(file.getAbsolutePath());
+    }
+
+    private void open(File file) {
+        currentFile = file;
+
+        removedComponents.clear();
+        visibleComponents.clear();
+        components.clear();
+        sourceListView.getItems().clear();
+        mirrorListView.getItems().clear();
+        absorberListView.getItems().clear();
+        shapeListView.getItems().clear();
+
+        try {
+            String data = Files.readString(Paths.get(file.toURI()));
+            Pattern pattern = Pattern.compile(".*\\{([^}]|\\n)*}");
+            Matcher matcher = pattern.matcher(data);
+
+            while (matcher.find()) {
+                try {
+                    String line = matcher.group().replaceAll("[ \\t\\r\\f]", "");
+                    String[] lines = line.split("\n");
+                    if (lines[0].equals("Canvas{")) {
+                        if (!Pattern.matches("Width:.*", lines[1]) || !Pattern.matches("Height:.*", lines[2])) {
+                            throw new IllegalArgumentException("Data for canvas is not valid!");
+                        }
+
+                        try {
+                            canvas.setWidth(Double.parseDouble(lines[1].substring(6)));
+                            canvas.setHeight(Double.parseDouble(lines[2].substring(7)));
+                        } catch (NumberFormatException ex) {
+                            Alert alert = new Alert(Alert.AlertType.ERROR, "Data for canvas is not valid!");
+                            alert.show();
+                        }
+                    } else {
+                        addComponent(Component.parseData(matcher.group()));
+                    }
+                } catch (IllegalArgumentException ex) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, ex.getMessage());
+                    alert.show();
+                }
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        addFile(file);
     }
 
     @FXML
@@ -577,13 +639,27 @@ public class Editor {
     private void initialiseKeyboardShortcuts() {
         borderPane.setOnKeyPressed(e -> {
             switch (e.getCode()) {
+                case S -> {
+                    if (e.isControlDown()) {
+                        if (currentFile != null) {
+                            save(currentFile);
+                        } else {
+                            FileChooser fileChooser = new FileChooser();
+                            Stage stage = new Stage();
+                            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Photon Files", "*.phn"));
+                            File selectedFile = fileChooser.showSaveDialog(stage);
+
+                            save(selectedFile);
+                        }
+                    }
+                }
                 case Z -> {
-                    if (components.size() > 0) {
+                    if (e.isControlDown() && components.size() > 0) {
                         removeComponent(components.get(components.size() - 1));
                     }
                 }
                 case Y -> {
-                    if (removedComponents.size() > 0) {
+                    if (e.isControlDown() && removedComponents.size() > 0) {
                         addComponent(removedComponents.remove(removedComponents.size() - 1));
                     }
                 }

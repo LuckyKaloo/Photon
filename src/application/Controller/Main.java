@@ -80,8 +80,6 @@ public class Main extends Application {
             "-separator-color: " + PROPERTIES.getProperty("separatorColor") + ";\n" +
             "-accent-color: " + PROPERTIES.getProperty("accentColor") + ";";
 
-        System.out.println(string);
-
         if (editor != null) {
             editor.setCss(string);
         }
