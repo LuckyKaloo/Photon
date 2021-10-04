@@ -45,6 +45,8 @@ TOP PANEL
 
 .context-menu {
     -fx-background-color: -background-color;
+    -fx-border-color: -button-color;
+    -fx-border-width: 2px;
 }
 
 .menu-item {

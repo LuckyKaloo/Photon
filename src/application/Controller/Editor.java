@@ -9,9 +9,13 @@ import application.Model.Light.LightRay;
 import application.Model.Light.LightSegment;
 import application.Model.Light.Normal;
 import io.github.palexdev.materialfx.controls.MFXTextField;
+import io.github.palexdev.materialfx.controls.enums.DialogType;
+import io.github.palexdev.materialfx.controls.factories.MFXStageDialogFactory;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
+import javafx.geometry.HPos;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -29,6 +33,7 @@ import javafx.stage.Stage;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -127,6 +132,8 @@ public class Editor {
 
     private final StringProperty css = new SimpleStringProperty();
 
+    private final Menu openRecent = new Menu();
+
     private final static int MAX_DISTANCE_SELECT = 6;
     private final static int NORMAL_WIDTH = 5;
     private final static double ROTATE_WHEEL_WIDTH = 50;
@@ -197,88 +204,157 @@ public class Editor {
      */
 
     private void initialiseMenuBar() {
-        MenuItem save = new MenuItem("Save");
-        save.setOnAction(e -> {
-            if (currentFile != null) {
-                save(currentFile);
-            } else {
-                FileChooser fileChooser = new FileChooser();
-                Stage stage = new Stage();
-                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Photon Files", "*.phn"));
-                File selectedFile = fileChooser.showSaveDialog(stage);
+        menuBar.getMenus().clear();
+        int fileWidth = 150;
+        Menu file = new Menu("File");
+        menuBar.getMenus().add(file);
 
-                save(selectedFile);
-            }
-        });
-        menuBar.getMenus().get(0).getItems().add(save);
+        MenuItem newFile = new MenuItem();
+        newFile.setGraphic(menuFormatting("New", "Ctrl+Shift+N", fileWidth));
+        newFile.setOnAction(e -> newFile());
+        file.getItems().add(newFile);
 
-        MenuItem saveAs = new MenuItem("Save As");
-        saveAs.setOnAction(e -> {
+        MenuItem save = new MenuItem();
+        save.setGraphic(menuFormatting("Save", "Ctrl+S", fileWidth));
+        save.setOnAction(e -> save());
+        file.getItems().add(save);
+
+        MenuItem saveAs = new MenuItem();
+        saveAs.setGraphic(menuFormatting("Save As", "Ctrl+Shift+S", fileWidth));
+        saveAs.setOnAction(e -> saveAs());
+        file.getItems().add(1, saveAs);
+
+        MenuItem open = new MenuItem();
+        open.setGraphic(menuFormatting("Open", "Ctrl+O", fileWidth));
+        open.setOnAction(e -> open());
+        file.getItems().add(open);
+
+        openRecent.setGraphic(menuFormatting("Open Recent", "", fileWidth));
+        file.getItems().add(openRecent);
+
+        MenuItem settings = new MenuItem();
+        settings.setGraphic(menuFormatting("Settings", "Ctrl+Alt+S", fileWidth));
+        settings.setOnAction(e -> Main.showSettings());
+        file.getItems().add(settings);
+
+
+        Menu help = new Menu("Help");
+        menuBar.getMenus().add(help);
+
+        MenuItem about = new MenuItem("About");
+        about.setOnAction(e -> Main.showAbout());
+        help.getItems().add(about);
+
+        updateRecentFiles();
+    }
+
+    private AnchorPane menuFormatting(String action, String shortcut, int width) {
+        AnchorPane anchorPane = new AnchorPane();
+        anchorPane.setPrefWidth(width);
+        Label actionLabel = new Label(action);
+        Label shortcutLabel = new Label(shortcut);
+        anchorPane.getChildren().addAll(actionLabel, shortcutLabel);
+
+        AnchorPane.setRightAnchor(shortcutLabel, 0.0);
+
+        return anchorPane;
+    }
+
+    private void newFile() {
+        currentFile = null;
+        fileName.setText("");
+        components.clear();
+        removedComponents.clear();
+        visibleComponents.clear();
+        selectedComponent = null;
+        selectedPoint = null;
+
+        sourceListView.getItems().clear();
+        mirrorListView.getItems().clear();
+        absorberListView.getItems().clear();
+        shapeListView.getItems().clear();
+
+        updateCanvas();
+    }
+
+    private void save() {
+        if (currentFile != null) {
+            saveFile(currentFile);
+        } else {
             FileChooser fileChooser = new FileChooser();
             Stage stage = new Stage();
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Photon Files", "*.phn"));
             File selectedFile = fileChooser.showSaveDialog(stage);
 
-            save(selectedFile);
-        });
-        menuBar.getMenus().get(0).getItems().add(1, saveAs);
-
-        MenuItem open = new MenuItem("Open");
-        open.setOnAction(e -> {
-            FileChooser fileChooser = new FileChooser();
-            Stage stage = new Stage();
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Photon Files", "*.phn"));
-            File selectedFile = fileChooser.showOpenDialog(stage);
-
-            if (selectedFile != null) {
-                open(selectedFile);
-            }
-
-            componentsModified = true;
-        });
-        menuBar.getMenus().get(0).getItems().add(open);
-
-        MenuItem openRecent = new MenuItem("Open Recent");
-        openRecent.setOnAction(e -> {
-            // help how to drop down menu
-        });
-
-        MenuItem settings = new MenuItem("Settings");
-        settings.setOnAction(e -> Main.showSettings());
-        menuBar.getMenus().get(0).getItems().add(settings);
+            saveFile(selectedFile);
+        }
     }
 
-    private void save(File file) {
+    private void saveAs() {
+        FileChooser fileChooser = new FileChooser();
+        Stage stage = new Stage();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Photon Files", "*.phn"));
+        File selectedFile = fileChooser.showSaveDialog(stage);
+
+        currentFile = selectedFile;
+        saveFile(selectedFile);
+    }
+
+    private void saveFile(File file) {
         try {
             FileWriter fileWriter = new FileWriter(file);
             fileWriter.append("Canvas {\n\tWidth: ").append(String.valueOf(canvas.getWidth()))
                     .append("\n\tHeight: ").append(String.valueOf(canvas.getHeight())).append("\n}\n");
-            for (Component component : components) {
+            for (Component component: components) {
                 fileWriter.append(component.toData());
             }
             fileWriter.close();
 
-            addFile(file);
-        } catch (IOException ignored) {}
+            addRecentFile(file);
+        } catch (Exception ignored) {}
     }
 
-    private void addFile(File file) {
-        recentFiles.add(file);
-        if (recentFiles.size() > 10) {
-            recentFiles.remove(0);
+    private void open() {
+        FileChooser fileChooser = new FileChooser();
+        Stage stage = new Stage();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Photon Files", "*.phn"));
+        File selectedFile = fileChooser.showOpenDialog(stage);
+
+        if (selectedFile != null) {
+            openFile(selectedFile);
         }
+
+        componentsModified = true;
+    }
+
+    private void addRecentFile(File file) {
+        boolean newFile = true;
+        for (File recentFile: recentFiles) {
+            if (file.getAbsolutePath().equals(recentFile.getAbsolutePath())) {
+                newFile = false;
+            }
+        }
+        if (newFile) {
+            recentFiles.add(file);
+            if (recentFiles.size() > 10) {
+                recentFiles.remove(0);
+            }
+        }
+
         try {
             FileWriter fileWriter = new FileWriter("src/application/Resources/recent_files.txt");
             for (File recentFile: recentFiles) {
-                fileWriter.append(recentFile.getAbsolutePath());
+                fileWriter.append(recentFile.getAbsolutePath()).append("\n");
             }
             fileWriter.close();
         } catch (IOException ignored) {}
 
         fileName.setText(file.getAbsolutePath());
+
+        updateRecentFiles();
     }
 
-    private void open(File file) {
+    private void openFile(File file) {
         currentFile = file;
 
         removedComponents.clear();
@@ -318,11 +394,27 @@ public class Editor {
                     alert.show();
                 }
             }
+        } catch (NoSuchFileException ex) {
+            Stage dialog = MFXStageDialogFactory.buildDialog(DialogType.ERROR, "",
+                    "File cannot be found: " + file.getAbsolutePath());
+            dialog.show();
         } catch (IOException ex) {
             ex.printStackTrace();
         }
 
-        addFile(file);
+        addRecentFile(file);
+    }
+
+    private void updateRecentFiles() {
+        openRecent.getItems().clear();
+        for (File recentFile: recentFiles) {
+            String[] info = recentFile.getAbsolutePath().split("\\\\");
+            String name = info[info.length - 1];
+
+            MenuItem fileName = new MenuItem(name.substring(0, name.length() - 4));
+            fileName.setOnAction(e -> openFile(recentFile));
+            openRecent.getItems().add(fileName);
+        }
     }
 
     @FXML
@@ -641,16 +733,23 @@ public class Editor {
             switch (e.getCode()) {
                 case S -> {
                     if (e.isControlDown()) {
-                        if (currentFile != null) {
-                            save(currentFile);
+                        if (e.isShiftDown()) {
+                            saveAs();
+                        } else if (e.isAltDown()) {
+                            Main.showSettings();
                         } else {
-                            FileChooser fileChooser = new FileChooser();
-                            Stage stage = new Stage();
-                            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Photon Files", "*.phn"));
-                            File selectedFile = fileChooser.showSaveDialog(stage);
-
-                            save(selectedFile);
+                            save();
                         }
+                    }
+                }
+                case O -> {
+                    if (e.isControlDown()) {
+                        open();
+                    }
+                }
+                case N -> {
+                    if (e.isControlDown()) {
+                        newFile();
                     }
                 }
                 case Z -> {
@@ -1039,20 +1138,20 @@ public class Editor {
             graphicsContext.closePath();
 
             // drawing the normals if the component is a source
-            if (component instanceof Source source) {
-                graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("shapeColor")));
-                graphicsContext.setLineDashes(2);
-                for (LightComponent lightComponent: source.getBeam().getLightComponents()) {
-                    Normal normal = lightComponent.getNormal();
-                    if (normal != null) {
-                        graphicsContext.beginPath();
-                        drawNormal(normal.edge(), normal.intersection());
-                        graphicsContext.stroke();
-                    }
-                }
-                graphicsContext.closePath();
-                graphicsContext.setLineDashes(0);
-            }
+//            if (component instanceof Source source) {
+//                graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("shapeColor")));
+//                graphicsContext.setLineDashes(2);
+//                for (LightComponent lightComponent: source.getBeam().getLightComponents()) {
+//                    Normal normal = lightComponent.getNormal();
+//                    if (normal != null) {
+//                        graphicsContext.beginPath();
+//                        drawNormal(normal.edge(), normal.intersection());
+//                        graphicsContext.stroke();
+//                    }
+//                }
+//                graphicsContext.closePath();
+//                graphicsContext.setLineDashes(0);
+//            }
         }
 
         // drawing the rotate-wheel if the selected component is a source or a line component

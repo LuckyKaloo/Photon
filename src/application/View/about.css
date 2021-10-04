@@ -1,0 +1,36 @@
+.root {
+    -title-color: #100c14;
+    -background-color: #0f111a;
+    -text-color: #c3cee3;
+    -background-selected-color: #222533;
+    -button-color: #191a21;
+    -disabled-color: #464b5d;
+    -selected-button-color: #21242f;
+    -highlight-color: #23273e;
+    -separator-color: #3b3f51;
+    -accent-color: #84ffff;
+}
+
+.main-container {
+    -fx-background-color: -background-color;
+    -fx-background-insets: 0;
+}
+
+.menu-bar {
+    -fx-background-color: -title-color;
+    -fx-background-insets: 0;
+}
+
+.text {
+    -fx-fill: -text-color;
+}
+
+.cross {
+    -fx-background-color: -title-color;
+    -fx-graphic: url(../Resources/images/cross.png);
+    -fx-background-radius: 0;
+}
+
+.cross:hover {
+    -fx-background-color: red;
+}

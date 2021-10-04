@@ -1,4 +1,4 @@
-module Project {
+module Photon {
     requires javafx.controls;
     requires javafx.base;
     requires javafx.graphics;

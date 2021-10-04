@@ -17,22 +17,32 @@ import java.util.Properties;
 public class Main extends Application {
     private static Stage editorStage;
     private static Stage settingsStage;
+    private static Stage aboutStage;
 
-    private static Settings settings;
     private static Editor editor;
+    private static Settings settings;
+    private static About about;
 
     public final static Properties PROPERTIES = new Properties();
 
     @Override
     public void start(Stage stage) throws Exception {
         loadProperties();
-        FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(Main.class.getResource("/application/View/settings.fxml")));
+
+        FXMLLoader settingsLoader = new FXMLLoader(Objects.requireNonNull(Main.class.getResource("/application/View/settings.fxml")));
         settingsStage = new Stage();
-        settingsStage.setScene(new Scene(loader.load()));
+        settingsStage.setScene(new Scene(settingsLoader.load()));
         settingsStage.initStyle(StageStyle.TRANSPARENT);
         settingsStage.initModality(Modality.APPLICATION_MODAL);
+        settings = settingsLoader.getController();
 
-        settings = loader.getController();
+        FXMLLoader aboutLoader = new FXMLLoader(Objects.requireNonNull(Main.class.getResource("/application/View/about.fxml")));
+        aboutStage = new Stage();
+        aboutStage.setScene(new Scene(aboutLoader.load()));
+        aboutStage.initStyle(StageStyle.TRANSPARENT);
+        aboutStage.initModality(Modality.APPLICATION_MODAL);
+        about = aboutLoader.getController();
+
         writeToCss();
 
 
@@ -84,6 +94,7 @@ public class Main extends Application {
             editor.setCss(string);
         }
         settings.setCss(string);
+        about.setCss(string);
     }
 
     public static void showOptions() {}
@@ -125,6 +136,14 @@ public class Main extends Application {
 
     public static void exitSettings() {
         settingsStage.close();
+    }
+
+    public static void showAbout() {
+        aboutStage.show();
+    }
+
+    public static void exitAbout() {
+        aboutStage.close();
     }
 
     public static void main(String[] args) {
