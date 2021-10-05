@@ -85,9 +85,9 @@ public interface Component {
                 Point start = Point.parseData(lines[3]);
                 Point end = Point.parseData(lines[4]);
                 if (lines[0].equals("Absorber{")) {
-                    return new LineComponent(name, visible, start, end, Edge.ABSORBER);
+                    return new LineComponent(name, visible, start, end, Edge.EdgeType.ABSORBER);
                 } else {
-                    return new LineComponent(name, visible, start, end, Edge.REFLECTOR);
+                    return new LineComponent(name, visible, start, end, Edge.EdgeType.REFLECTOR);
                 }
             }
             default -> throw new IllegalArgumentException(

@@ -1,0 +1,1 @@
+The bottom panel contains the buttons required to select components, which can be toggled on and off by clicking on them. The selected type of component can then be added to the canvas in the center panel by clicking on it.

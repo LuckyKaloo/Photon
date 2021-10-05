@@ -150,7 +150,7 @@ public class SplashScreen {
                 }
 
 
-                StringBuilder stringBuilder = new StringBuilder("gradient-info: linear-gradient(to bottom right");
+                StringBuilder stringBuilder = new StringBuilder("-gradient-info: linear-gradient(to bottom right");
                 double newPortion = 100.0 / (includedColors.size() - 1);
                 for (int i = 0; i < includedColors.size(); i++) {
                     Color color = includedColors.get(i);

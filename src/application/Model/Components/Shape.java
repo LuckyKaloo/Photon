@@ -36,7 +36,7 @@ public class Shape implements Component {
             ArrayList<Segment> segments = Segment.pointsToSegments(this.vertexes, true);
             this.edges = new ArrayList<>();
             for (Segment segment : segments) {
-                this.edges.add(new Edge(segment, Edge.REFRACTOR));
+                this.edges.add(new Edge(segment, Edge.EdgeType.REFRACTOR));
             }
         } else {
             throw new IllegalArgumentException("Input an ArrayList of Point or Edge objects only");

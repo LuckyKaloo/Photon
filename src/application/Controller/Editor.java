@@ -7,15 +7,10 @@ import application.Model.Geometry.Segment;
 import application.Model.Light.LightComponent;
 import application.Model.Light.LightRay;
 import application.Model.Light.LightSegment;
-import application.Model.Light.Normal;
 import io.github.palexdev.materialfx.controls.MFXTextField;
-import io.github.palexdev.materialfx.controls.enums.DialogType;
-import io.github.palexdev.materialfx.controls.factories.MFXStageDialogFactory;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
-import javafx.geometry.HPos;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -103,6 +98,26 @@ public class Editor {
     private ListView<GridPane> shapeListView;
     @FXML
     private Label fileName;
+    @FXML
+    private Region topRegion;
+    @FXML
+    private Region leftRegion;
+    @FXML
+    private Region centerRegion;
+    @FXML
+    private Region rightRegion;
+    @FXML
+    private Region bottomRegion;
+    @FXML
+    private StackPane topPanel;
+    @FXML
+    private StackPane leftPanel;
+    @FXML
+    private StackPane centerPanel;
+    @FXML
+    private StackPane rightPanel;
+    @FXML
+    private StackPane bottomPanel;
 
     // non FXML stuff
     private GraphicsContext graphicsContext;
@@ -133,6 +148,7 @@ public class Editor {
     private final StringProperty css = new SimpleStringProperty();
 
     private final Menu openRecent = new Menu();
+    private boolean showingTutorial = false;
 
     private final static int MAX_DISTANCE_SELECT = 6;
     private final static int NORMAL_WIDTH = 5;
@@ -190,6 +206,7 @@ public class Editor {
         initialiseCanvasActions();
         initialiseMenuBar();
         initializeInformationPanel();
+        initializeTutorial();
 
         componentsModified = true;
         updateCanvas();
@@ -240,6 +257,14 @@ public class Editor {
 
         Menu help = new Menu("Help");
         menuBar.getMenus().add(help);
+
+        MenuItem showTutorial = new MenuItem("Show Tutorial");
+        showTutorial.setOnAction(e -> showTutorial());
+        help.getItems().add(showTutorial);
+
+        MenuItem closeTutorial = new MenuItem("Close Tutorial");
+        closeTutorial.setOnAction(e -> closeTutorial());
+        help.getItems().add(closeTutorial);
 
         MenuItem about = new MenuItem("About");
         about.setOnAction(e -> Main.showAbout());
@@ -395,9 +420,7 @@ public class Editor {
                 }
             }
         } catch (NoSuchFileException ex) {
-            Stage dialog = MFXStageDialogFactory.buildDialog(DialogType.ERROR, "",
-                    "File cannot be found: " + file.getAbsolutePath());
-            dialog.show();
+            Main.showDialog(CustomDialog.DialogType.ERROR, "File cannot be found: " + file.getAbsolutePath());
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -425,6 +448,51 @@ public class Editor {
     @FXML
     private void exit() {
         Main.exitEditor();
+    }
+
+    /*
+    TUTORIAL
+     */
+
+    private void initializeTutorial() {
+        try {
+            String left = Files.readString(Paths.get(new File("src/application/Resources/information/left_panel_information.txt").toURI()));
+            String center = Files.readString(Paths.get(new File("src/application/Resources/information/center_panel_information.txt").toURI()));
+            String right = Files.readString(Paths.get(new File("src/application/Resources/information/right_panel_information.txt").toURI()));
+            String bottom = Files.readString(Paths.get(new File("src/application/Resources/information/bottom_panel_information.txt").toURI()));
+
+            leftRegion.setOnMouseClicked(e -> Main.showDialog(CustomDialog.DialogType.INFO, left));
+            centerRegion.setOnMouseClicked(e -> Main.showDialog(CustomDialog.DialogType.INFO, center));
+            rightRegion.setOnMouseClicked(e -> Main.showDialog(CustomDialog.DialogType.INFO, right));
+            bottomRegion.setOnMouseClicked(e -> Main.showDialog(CustomDialog.DialogType.INFO, bottom));
+        } catch (IOException ignored) {}
+    }
+
+    private void showTutorial() {
+        if (!showingTutorial) {
+            try {
+                String tutorialInfo = Files.readString(Paths.get(new File("src/application/Resources/information/tutorial_information.txt").toURI()));
+                Main.showDialog(CustomDialog.DialogType.INFO, tutorialInfo);
+            } catch (IOException ignored) {}
+
+            leftRegion.setVisible(true);
+            centerRegion.setVisible(true);
+            rightRegion.setVisible(true);
+            bottomRegion.setVisible(true);
+
+            showingTutorial = true;
+        }
+    }
+
+    private void closeTutorial() {
+        if (showingTutorial) {
+            leftRegion.setVisible(false);
+            centerRegion.setVisible(false);
+            rightRegion.setVisible(false);
+            bottomRegion.setVisible(false);
+
+            showingTutorial = false;
+        }
     }
 
     /*
@@ -479,7 +547,7 @@ public class Editor {
             sourceListView.getItems().add(gridPane);
             sourceListView.getSelectionModel().select(gridPane);
         } else if (component instanceof LineComponent lineComponent) {
-            if (lineComponent.getEdge().getType() == Edge.REFLECTOR) {
+            if (lineComponent.getEdge().getType() == Edge.EdgeType.REFLECTOR) {
                 mirrorListView.getItems().add(gridPane);
                 mirrorListView.getSelectionModel().select(gridPane);
             } else {
@@ -514,7 +582,7 @@ public class Editor {
         if (component instanceof Source) {
             sourceListView.getItems().remove(componentGridPaneHashMap.get(component));
         } else if (component instanceof LineComponent lineComponent) {
-            if (lineComponent.getEdge().getType() == Edge.REFLECTOR) {
+            if (lineComponent.getEdge().getType() == Edge.EdgeType.REFLECTOR) {
                 mirrorListView.getItems().remove(componentGridPaneHashMap.get(component));
             } else {
                 absorberListView.getItems().remove(componentGridPaneHashMap.get(component));
@@ -810,9 +878,9 @@ public class Editor {
                     startPoint = new Point(e.getX(), e.getY());
                 } else {
                     if (mirror.isSelected()) {
-                        selectedComponent = new LineComponent(startPoint, new Point(e.getX(), e.getY()), Edge.REFLECTOR);
+                        selectedComponent = new LineComponent(startPoint, new Point(e.getX(), e.getY()), Edge.EdgeType.REFLECTOR);
                     } else {
-                        selectedComponent = new LineComponent(startPoint, new Point(e.getX(), e.getY()), Edge.ABSORBER);
+                        selectedComponent = new LineComponent(startPoint, new Point(e.getX(), e.getY()), Edge.EdgeType.ABSORBER);
                     }
 
                     addComponent(selectedComponent);
@@ -893,7 +961,7 @@ public class Editor {
                     if (selectedComponent instanceof Source) {
                         sourceListView.getSelectionModel().select(componentGridPaneHashMap.get(selectedComponent));
                     } else if (selectedComponent instanceof LineComponent lineComponent) {
-                        if (lineComponent.getEdge().getType() == Edge.REFLECTOR) {
+                        if (lineComponent.getEdge().getType() == Edge.EdgeType.REFLECTOR) {
                             mirrorListView.getSelectionModel().select(componentGridPaneHashMap.get(selectedComponent));
                         } else {
                             absorberListView.getSelectionModel().select(componentGridPaneHashMap.get(selectedComponent));
@@ -1126,9 +1194,9 @@ public class Editor {
                 } else if (component instanceof Source source) {
                     graphicsContext.setStroke(source.getBeam().getColor());
                 } else if (component instanceof LineComponent lineComponent) {
-                    if (lineComponent.getEdge().getType() == Edge.ABSORBER) {
+                    if (lineComponent.getEdge().getType() == Edge.EdgeType.ABSORBER) {
                         graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("absorberColor")));
-                    } else if (lineComponent.getEdge().getType() == Edge.REFLECTOR) {
+                    } else if (lineComponent.getEdge().getType() == Edge.EdgeType.REFLECTOR) {
                         graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("mirrorColor")));
                     }
                 }

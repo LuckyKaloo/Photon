@@ -157,7 +157,7 @@ RIGHT PANEL
  */
 
 
-.region {
+.sub-title {
     -fx-background-color: -background-selected-color;
 }
 
@@ -199,4 +199,18 @@ RIGHT PANEL
 
 .color-picker:showing .arrow-button .arrow {
     -fx-rotate: 0;
+}
+
+
+/*
+TUTORIAL
+ */
+
+
+.tutorial-region {
+    -fx-background-color: rgba(7, 7, 12, 0.2);
+}
+
+.tutorial-region:hover {
+    -fx-background-color: transparent;
 }

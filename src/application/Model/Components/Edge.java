@@ -6,47 +6,35 @@ import application.Model.Light.LightRay;
 import application.Model.Light.Normal;
 
 public class Edge extends Segment {
-    public final static int REFLECTOR = 0;
-    public final static int REFRACTOR = 1;
-    public final static int ABSORBER = 2;
+    public enum EdgeType {REFLECTOR, REFRACTOR, ABSORBER}
 
-    private int type;
+    private final EdgeType type;
 
 
-    public Edge(Point start, Point end, int type) {
+    public Edge(Point start, Point end, EdgeType type) {
         super(start, end);
-        setType(type);
+        this.type = type;
     }
 
-    public Edge(Segment segment, int type) {
+    public Edge(Segment segment, EdgeType type) {
         super(segment);
-        setType(type);
+        this.type = type;
     }
 
-    public void setType(int type) {
-        if (type == REFLECTOR || type == REFRACTOR || type == ABSORBER) {
-            this.type = type;
-        } else {
-            throw new IllegalArgumentException("Invalid type for edge!");
-        }
-    }
-
-    public int getType() {
+    public EdgeType getType() {
         return type;
     }
 
     public LightRay interact(LightRay lightRay) {
-        if (type == ABSORBER) {
-            return null;
-        } else if (type == REFLECTOR) {
-            return interact(lightRay, null, true);
-        }
-
-        throw new IllegalCallerException("Cannot call method with only ray for refractor!");
+        return switch(type) {
+            case ABSORBER -> null;
+            case REFLECTOR -> interact(lightRay, null, true);
+            default -> throw new IllegalCallerException("Cannot call method with only ray for refractor!");
+        };
     }
 
     public LightRay interact(LightRay lightRay, Shape endShape, boolean reflect) {
-        if (type == ABSORBER) {
+        if (type == EdgeType.ABSORBER) {
             return null;
         }
 
@@ -63,10 +51,10 @@ public class Edge extends Segment {
         double normalisedAngle = Math.abs(initialAngle % 180);
         double angleIncidence = Math.abs(90 - normalisedAngle);
 
-        if (type == REFLECTOR || reflect || lightRay.getRefractiveIndex() == 0) {
+        if (type == EdgeType.REFLECTOR || reflect || lightRay.getRefractiveIndex() == 0) {
             return reflect(initialAngle, normalisedAngle, angleIncidence,
                     lightRay.getShape(), intersection);
-        } else if (type == REFRACTOR) {
+        } else if (type == EdgeType.REFRACTOR) {
             return refract(initialAngle, normalisedAngle, angleIncidence,
                     lightRay.getShape(), endShape, intersection);
         }

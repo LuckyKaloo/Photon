@@ -8,15 +8,15 @@ public class LineComponent implements Component {
     private String name;
     private boolean visible;
 
-    private final int type;
+    private final Edge.EdgeType type;
     private final Edge edge;
 
-    public LineComponent(Point start, Point end, int type) {
-        if (type == Edge.REFLECTOR || type == Edge.ABSORBER) {
+    public LineComponent(Point start, Point end, Edge.EdgeType type) {
+        if (type == Edge.EdgeType.REFLECTOR || type == Edge.EdgeType.ABSORBER) {
             this.type = type;
             edge = new Edge(start, end, type);
 
-            if (type == Edge.REFLECTOR) {
+            if (type == Edge.EdgeType.REFLECTOR) {
                 name = "Mirror";
             } else {
                 name = "Absorber";
@@ -28,7 +28,7 @@ public class LineComponent implements Component {
         }
     }
 
-    public LineComponent(String name, boolean visible, Point start, Point end, int type) {
+    public LineComponent(String name, boolean visible, Point start, Point end, Edge.EdgeType type) {
         this(start, end, type);
         this.name = name;
         this.visible = visible;
@@ -76,9 +76,9 @@ public class LineComponent implements Component {
     @Override
     public String toData() {
         StringBuilder stringBuilder = new StringBuilder();
-        if (type == Edge.REFLECTOR) {
+        if (type == Edge.EdgeType.REFLECTOR) {
             stringBuilder.append("Mirror {\n");
-        } else if (type == Edge.ABSORBER) {
+        } else if (type == Edge.EdgeType.ABSORBER) {
             stringBuilder.append("Absorber {\n");
         }
         stringBuilder.append("\tName: ").append(name).append("\n");

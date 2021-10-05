@@ -1,9 +1,13 @@
 package application.Controller;
 
+import io.github.palexdev.materialfx.controls.MFXDialog;
+import io.github.palexdev.materialfx.controls.MFXStageDialog;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -18,10 +22,12 @@ public class Main extends Application {
     private static Stage editorStage;
     private static Stage settingsStage;
     private static Stage aboutStage;
+    private static Stage dialogStage;
 
     private static Editor editor;
     private static Settings settings;
     private static About about;
+    private static CustomDialog dialog;
 
     public final static Properties PROPERTIES = new Properties();
 
@@ -42,6 +48,13 @@ public class Main extends Application {
         aboutStage.initStyle(StageStyle.TRANSPARENT);
         aboutStage.initModality(Modality.APPLICATION_MODAL);
         about = aboutLoader.getController();
+
+        FXMLLoader dialogLoader = new FXMLLoader(Objects.requireNonNull(Main.class.getResource("/application/View/dialog.fxml")));
+        dialogStage = new Stage();
+        dialogStage.setScene(new Scene(dialogLoader.load()));
+        dialogStage.initStyle(StageStyle.TRANSPARENT);
+        dialogStage.initModality(Modality.APPLICATION_MODAL);
+        dialog = dialogLoader.getController();
 
         writeToCss();
 
@@ -95,6 +108,7 @@ public class Main extends Application {
         }
         settings.setCss(string);
         about.setCss(string);
+        dialog.setCss(string);
     }
 
     public static void showOptions() {}
@@ -144,6 +158,25 @@ public class Main extends Application {
 
     public static void exitAbout() {
         aboutStage.close();
+    }
+
+//    public static void showDialog(MFXStageDialog dialog) {
+//        dialog.setOwner(dialogStage);
+//        dialog.setModality(Modality.APPLICATION_MODAL);
+//        dialog.setScrimBackground(true);
+//        dialog.setAnimate(false);
+//        dialog.setCenterInOwner(true);
+//        dialog.show();
+//    }
+
+    public static void showDialog(CustomDialog.DialogType type, String text) {
+        dialog.setType(type);
+        dialog.setInformation(text);
+        dialogStage.show();
+    }
+
+    public static void exitDialog() {
+        dialogStage.close();
     }
 
     public static void main(String[] args) {
