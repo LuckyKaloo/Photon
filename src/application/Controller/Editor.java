@@ -138,6 +138,10 @@ public class Editor {
     private Point rotatePoint;
     private double rotateAngle;  // if the user is rotating a component, the initial angle that they started at
 
+    private boolean translating = false;
+    private Component initialTranslateComponent; // the initial position of the component currently being translated
+    private Point translatePoint; // the point that the user started translating from
+
     private final ArrayList<File> recentFiles = new ArrayList<>();
     private File currentFile; // the current file that the user has opened
 
@@ -957,6 +961,7 @@ public class Editor {
                                 throw new IllegalStateException("Rotating but selected component is not a source or line component");
                             }
                             rotating = true;
+                            translating = false;
                             componentsModified = true;
                         }
                         // user needs to not have selected a point in order to rotate something
@@ -976,10 +981,20 @@ public class Editor {
                         } else if (selectedComponent instanceof LineComponent lineComponent && selectedPoint == null) {
                             rotatable = true;
                             rotatePoint = lineComponent.getEdge().midpoint();
+
+                            translating = true;
+                            initialTranslateComponent = lineComponent.copy();
+                            translatePoint = new Point(e.getX(), e.getY());
                         }
                     } else {
                         rotatable = false;
                         rotating = false;
+
+                        if (selectedComponent instanceof Shape) {
+                            translating = true;
+                            initialTranslateComponent = selectedComponent.copy();
+                            translatePoint = new Point(e.getX(), e.getY());
+                        }
                     }
 
                     // resetting the selected component in the list views
@@ -1036,12 +1051,24 @@ public class Editor {
                     throw new IllegalStateException("Rotating a component that is not a source or line component");
                 }
                 componentsModified = true;
+            } else if (translating) {
+                Point vector = Point.subtract(new Point(e.getX(), e.getY()), translatePoint);
+                selectedComponent.set(initialTranslateComponent.translate(vector));
+
+                componentsModified = true;
             }
 
             updateCanvas(e);
         });
 
-        canvas.setOnMouseReleased(e -> rotating = false);
+        canvas.setOnMouseReleased(e -> {
+            rotating = false;
+            translating = false;
+
+            if (selectedComponent instanceof LineComponent lineComponent && rotatable) {
+                rotatePoint = lineComponent.getEdge().midpoint();
+            }
+        });
     }
 
     @FXML
@@ -1071,6 +1098,19 @@ public class Editor {
                 Main.showDialog(CustomDialog.DialogType.ERROR, "Cannot remove point if no point is selected!");
             }
         }
+    }
+
+    private void copy() {
+
+    }
+
+    private void paste() {
+
+    }
+
+    private void duplicate() {
+        copy();
+        paste();
     }
 
     // finding the clicked or hovered component

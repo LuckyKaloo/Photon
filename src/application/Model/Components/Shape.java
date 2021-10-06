@@ -21,7 +21,7 @@ public class Shape implements Component {
         this.refractiveIndex = refractiveIndex;
         if (objects.get(0) instanceof Edge) {  // inputted as ArrayList<Edge>
             this.edges = new ArrayList<>();
-            for (T object : objects) {
+            for (T object: objects) {
                 this.edges.add((Edge) object);
             }
 
@@ -29,7 +29,7 @@ public class Shape implements Component {
             this.vertices = Segment.segmentsToPoints(segments);
         } else if (objects.get(0) instanceof Point) {  // inputted as ArrayList<Point>
             this.vertices = new ArrayList<>();
-            for (T object : objects) {
+            for (T object: objects) {
                 this.vertices.add((Point) object);
             }
 
@@ -54,8 +54,10 @@ public class Shape implements Component {
 
     @Override
     public void update() {
-        for (Edge edge : edges) {
-            edge.updateSegment();
+        ArrayList<Segment> segments = Segment.pointsToSegments(this.vertices, true);
+        edges.clear();
+        for (Segment segment: segments) {
+            edges.add(new Edge(segment, Edge.EdgeType.REFRACTOR));
         }
     }
 
@@ -134,6 +136,34 @@ public class Shape implements Component {
     @Override
     public void setVisibility(boolean visible) {
         this.visible = visible;
+    }
+
+    @Override
+    public Shape copy() {
+        ArrayList<Point> vertices = new ArrayList<>();
+        for (Point vertex: this.vertices) {
+            vertices.add(vertex.copy());
+        }
+        return new Shape(name, visible, refractiveIndex, vertices);
+    }
+
+    @Override
+    public Shape translate(Point vector) {
+        Shape output = copy();
+        for (Point vertex: output.vertices) {
+            vertex.translate(vector);
+        }
+        output.update();
+        return output;
+    }
+
+    @Override
+    public void set(Component component) {
+        if (component instanceof Shape shape) {
+            vertices.clear();
+            vertices.addAll(shape.vertices);
+            update();
+        }
     }
 
     /* crossing number algorithm

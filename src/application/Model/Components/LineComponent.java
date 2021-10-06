@@ -59,6 +59,29 @@ public class LineComponent implements Component {
     }
 
     @Override
+    public LineComponent copy() {
+        return new LineComponent(name, visible, edge.getStart().copy(), edge.getEnd().copy(), type);
+    }
+
+    @Override
+    public LineComponent translate(Point vector) {
+        LineComponent output = copy();
+        output.edge.getStart().translate(vector);
+        output.edge.getEnd().translate(vector);
+        output.update();
+        return output;
+    }
+
+    @Override
+    public void set(Component component) {
+        if (component instanceof LineComponent lineComponent) {
+            edge.setStart(lineComponent.getEdge().getStart());
+            edge.setEnd(lineComponent.getEdge().getEnd());
+            update();
+        }
+    }
+
+    @Override
     public LightRay interact(LightRay lightRay) {
         return edge.interact(lightRay);
     }
@@ -70,7 +93,7 @@ public class LineComponent implements Component {
 
     @Override
     public void update() {
-        getEdge().updateSegment();
+        edge.updateSegment();
     }
 
     @Override

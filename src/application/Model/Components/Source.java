@@ -40,6 +40,28 @@ public class Source implements Component {
     }
 
     @Override
+    public Source copy() {
+        return new Source(name, visible, beam.getInitialRay().getStart(), beam.getInitialRay().getAngle(), beam.getColor());
+    }
+
+    @Override
+    public Source translate(Point vector) {
+        Source output = copy();
+        output.beam.getInitialRay().getStart().translate(vector);
+        output.update();
+        return output;
+    }
+
+    @Override
+    public void set(Component component) {
+        if (component instanceof Source source) {
+            beam.getInitialRay().setStart(source.beam.getInitialRay().getStart().copy());
+            beam.getInitialRay().setAngle(source.beam.getInitialRay().getAngle());
+            update();
+        }
+    }
+
+    @Override
     public String getName() {
         return name;
     }

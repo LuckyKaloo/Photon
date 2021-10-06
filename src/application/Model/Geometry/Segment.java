@@ -48,6 +48,10 @@ public class Segment extends Ray {
         return end;
     }
 
+    public void setEnd(Point end) {
+        this.end = end;
+    }
+
     public void updateSegment() {
         this.gradient = (end.getY() - start.getY()) / (end.getX() - start.getX());
         this.angle = Math.toDegrees(Math.atan(this.gradient)) % 180;

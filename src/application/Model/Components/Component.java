@@ -100,4 +100,10 @@ public interface Component {
     boolean getVisibility();  // returns whether the component is visible to the user
 
     void setVisibility(boolean visibility);
+
+    Component copy();
+
+    Component translate(Point vector);
+
+    void set(Component component);
 }

@@ -70,6 +70,11 @@ public final class Point {
         return "Point: (" + x + "," + y + ")";
     }
 
+    public void translate(Point vector) {
+        x += vector.x;
+        y += vector.y;
+    }
+
     public static Point parseData(String data) {
         if (!Pattern.matches("Point:.*", data)) {
             throw new IllegalArgumentException("Data for point is not valid!");
@@ -81,5 +86,15 @@ public final class Point {
                 throw new IllegalArgumentException("Data for point is not valid!");
             }
         }
+    }
+
+    public Point copy() {
+        return new Point(x, y);
+    }
+
+    // subtracts point2 from point1 for both x and y to return a new Point
+    // the returned Point can be thought of as a vector
+    public static Point subtract(Point point1, Point point2) {
+        return new Point(point1.x - point2.x, point1.y - point2.y);
     }
 }
