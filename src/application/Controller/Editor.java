@@ -10,6 +10,7 @@ import application.Model.Light.LightSegment;
 import io.github.palexdev.materialfx.controls.MFXTextField;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
@@ -142,6 +143,8 @@ public class Editor {
     private Component initialTranslateComponent; // the initial position of the component currently being translated
     private Point translatePoint; // the point that the user started translating from
 
+    private Component copiedComponent;
+
     private final ArrayList<File> recentFiles = new ArrayList<>();
     private File currentFile; // the current file that the user has opened
 
@@ -161,6 +164,8 @@ public class Editor {
     private final static double ROTATE_WHEEL_WIDTH = 50;
 
     private final static int COMPONENT_BUTTON_SIZE = 60;
+
+    private final static int MENU_WIDTH = 180;
 
 
     // start method to initialize everything and start the editor
@@ -232,64 +237,43 @@ public class Editor {
         Menu file = new Menu("File");
         menuBar.getMenus().add(file);
 
-        MenuItem newFile = new MenuItem();
-        keybindNamePropertyMap.put("newFile", new SimpleStringProperty());
-        newFile.setGraphic(menuFormatting("New", "newFile", fileWidth));
-        newFile.setOnAction(e -> newFile());
-        file.getItems().add(newFile);
-
-        MenuItem save = new MenuItem();
-        keybindNamePropertyMap.put("save", new SimpleStringProperty());
-        save.setGraphic(menuFormatting("Save", "save", fileWidth));
-        save.setOnAction(e -> save());
-        file.getItems().add(save);
-
-        MenuItem saveAs = new MenuItem();
-        keybindNamePropertyMap.put("saveAs", new SimpleStringProperty());
-        saveAs.setGraphic(menuFormatting("Save As", "saveAs", fileWidth));
-        saveAs.setOnAction(e -> saveAs());
-        file.getItems().add(1, saveAs);
-
-        MenuItem open = new MenuItem();
-        keybindNamePropertyMap.put("open", new SimpleStringProperty());
-        open.setGraphic(menuFormatting("Open", "open", fileWidth));
-        open.setOnAction(e -> open());
-        file.getItems().add(open);
+        addMenuItem(file, "New", "newFile", e -> newFile());
+        addMenuItem(file, "Save", "save", e -> save());
+        addMenuItem(file, "Save As", "saveAs", e -> saveAs());
+        addMenuItem(file, "Open", "open", e -> open());
 
         keybindNamePropertyMap.put("openRecent", new SimpleStringProperty());
         openRecent.setGraphic(menuFormatting("Open Recent", "openRecent", fileWidth));
         file.getItems().add(openRecent);
 
-        MenuItem settings = new MenuItem();
-        keybindNamePropertyMap.put("settings", new SimpleStringProperty());
-        settings.setGraphic(menuFormatting("Settings", "settings", fileWidth));
-        settings.setOnAction(e -> Main.showSettings());
-        file.getItems().add(settings);
+        addMenuItem(file, "Settings", "settings", e -> Main.showSettings());
+
+
+        Menu edit = new Menu("Edit");
+        menuBar.getMenus().add(edit);
+
+        addMenuItem(edit, "Copy", "copy", e -> copy());
+        addMenuItem(edit, "Paste", "paste", e -> paste());
+        addMenuItem(edit, "Duplicate", "duplicate", e -> duplicate());
 
 
         Menu help = new Menu("Help");
         menuBar.getMenus().add(help);
 
-        MenuItem showTutorial = new MenuItem();
-        keybindNamePropertyMap.put("showTutorial", new SimpleStringProperty());
-        showTutorial.setGraphic(menuFormatting("Show Tutorial", "showTutorial", fileWidth));
-        showTutorial.setOnAction(e -> showTutorial());
-        help.getItems().add(showTutorial);
-
-        MenuItem closeTutorial = new MenuItem();
-        keybindNamePropertyMap.put("closeTutorial", new SimpleStringProperty());
-        closeTutorial.setGraphic(menuFormatting("Close Tutorial", "closeTutorial", fileWidth));
-        closeTutorial.setOnAction(e -> closeTutorial());
-        help.getItems().add(closeTutorial);
-
-        MenuItem about = new MenuItem();
-        keybindNamePropertyMap.put("about", new SimpleStringProperty());
-        about.setGraphic(menuFormatting("About", "about", fileWidth));
-        about.setOnAction(e -> Main.showAbout());
-        help.getItems().add(about);
+        addMenuItem(help, "Show Tutorial", "showTutorial", e -> showTutorial());
+        addMenuItem(help, "Close Tutorial", "closeTutorial", e -> closeTutorial());
+        addMenuItem(help, "About", "about", e -> Main.showAbout());
 
         setMenuBarKeybinds();
         updateRecentFiles();
+    }
+
+    private void addMenuItem(Menu menu, String action, String propertyName, Consumer<ActionEvent> onAction) {
+        MenuItem menuItem = new MenuItem();
+        keybindNamePropertyMap.put(propertyName, new SimpleStringProperty());
+        menuItem.setGraphic(menuFormatting(action, propertyName, MENU_WIDTH));
+        menuItem.setOnAction(onAction::accept);
+        menu.getItems().add(menuItem);
     }
 
     void setMenuBarKeybinds() {
@@ -843,6 +827,9 @@ public class Editor {
                 else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("addPoint"))) addPointToShape();
                 else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("undo"))) undo();
                 else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("redo"))) redo();
+                else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("copy"))) copy();
+                else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("paste"))) paste();
+                else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("duplicate"))) duplicate();
             } else {
                 switch (e.getCode()) {
                     case SHIFT -> scrollPane.setPannable(true);
@@ -1101,11 +1088,21 @@ public class Editor {
     }
 
     private void copy() {
-
+        try {
+            copiedComponent = selectedComponent.copy();
+        } catch (NullPointerException e) {
+            Main.showDialog(CustomDialog.DialogType.ERROR, "Please select a component to copy!");
+        }
     }
 
     private void paste() {
-
+        if (copiedComponent != null) {
+            selectedComponent = copiedComponent.translate(new Point(10, -10));
+            copiedComponent = selectedComponent.copy();
+            addComponent(selectedComponent);
+            componentsModified = true;
+            updateCanvas();
+        }
     }
 
     private void duplicate() {

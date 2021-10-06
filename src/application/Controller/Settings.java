@@ -79,6 +79,12 @@ public class Settings implements Initializable {
     @FXML
     private MFXLabel redo;
     @FXML
+    private MFXLabel copy;
+    @FXML
+    private MFXLabel paste;
+    @FXML
+    private MFXLabel duplicate;
+    @FXML
     private AnchorPane editorKeyBinds;
     @FXML
     private MFXLabel newFile;
@@ -217,6 +223,9 @@ public class Settings implements Initializable {
         addPoint.setText(properties.getProperty("addPoint"));
         undo.setText(properties.getProperty("undo"));
         redo.setText(properties.getProperty("redo"));
+        copy.setText(properties.getProperty("copy"));
+        paste.setText(properties.getProperty("paste"));
+        duplicate.setText(properties.getProperty("duplicate"));
     }
 
     @FXML
@@ -258,6 +267,9 @@ public class Settings implements Initializable {
         Main.KEYBIND_PROPERTIES.setProperty("addPoint", addPoint.getText());
         Main.KEYBIND_PROPERTIES.setProperty("undo", undo.getText());
         Main.KEYBIND_PROPERTIES.setProperty("redo", redo.getText());
+        Main.KEYBIND_PROPERTIES.setProperty("copy", copy.getText());
+        Main.KEYBIND_PROPERTIES.setProperty("paste", paste.getText());
+        Main.KEYBIND_PROPERTIES.setProperty("duplicate", duplicate.getText());
 
 
         Main.resetMenuBar();
