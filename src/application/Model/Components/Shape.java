@@ -13,7 +13,7 @@ public class Shape implements Component {
 
     private double refractiveIndex;
     private final ArrayList<Edge> edges;
-    private final ArrayList<Point> vertexes;
+    private final ArrayList<Point> vertices;
 
     private int layer;  // if shapes are stacked on each other, then this determines which one is clicked by the user
 
@@ -26,14 +26,14 @@ public class Shape implements Component {
             }
 
             ArrayList<Segment> segments = new ArrayList<>(this.edges);
-            this.vertexes = Segment.segmentsToPoints(segments);
+            this.vertices = Segment.segmentsToPoints(segments);
         } else if (objects.get(0) instanceof Point) {  // inputted as ArrayList<Point>
-            this.vertexes = new ArrayList<>();
+            this.vertices = new ArrayList<>();
             for (T object : objects) {
-                this.vertexes.add((Point) object);
+                this.vertices.add((Point) object);
             }
 
-            ArrayList<Segment> segments = Segment.pointsToSegments(this.vertexes, true);
+            ArrayList<Segment> segments = Segment.pointsToSegments(this.vertices, true);
             this.edges = new ArrayList<>();
             for (Segment segment : segments) {
                 this.edges.add(new Edge(segment, Edge.EdgeType.REFRACTOR));
@@ -59,6 +59,56 @@ public class Shape implements Component {
         }
     }
 
+    public void addPoint() {
+        double totalX = 0;
+        double totalY = 0;
+        for (Point point: vertices) {
+            totalX += point.getX();
+            totalY += point.getY();
+        }
+        Point point2 = new Point(totalX / vertices.size(), totalY / vertices.size());
+
+        // ensure that point2 does not equal any other points which would cause errors
+        while (true) {
+            boolean isEqual = false;
+            for (Point point: vertices) {
+                if (point.equals(point2)) {
+                    isEqual = true;
+                    break;
+                }
+            }
+            if (isEqual) {
+                point2.setX(point2.getX() + 1);
+            } else {
+                break;
+            }
+        }
+        vertices.add(point2);
+
+        Edge lastEdge = edges.remove(edges.size() - 1);
+        Point point1 = lastEdge.getStart();
+        Point point3 = lastEdge.getEnd();
+
+        Edge edge1 = new Edge(new Segment(point1, point2), Edge.EdgeType.REFRACTOR);
+        Edge edge2 = new Edge(new Segment(point2, point3), Edge.EdgeType.REFRACTOR);
+
+        edges.add(edge1);
+        edges.add(edge2);
+    }
+
+    public void removePoint(Point point) {
+        if (vertices.contains(point) && vertices.size() > 3) {
+            vertices.remove(point);
+            ArrayList<Segment> segments = Segment.pointsToSegments(vertices, true);
+            edges.clear();
+            for (Segment segment: segments) {
+                edges.add(new Edge(segment, Edge.EdgeType.REFRACTOR));
+            }
+        } else {
+            throw new IllegalArgumentException("Shape does not contain point, cannot remove point");
+        }
+    }
+
 
     public double getRefractiveIndex() {
         return refractiveIndex;
@@ -68,8 +118,8 @@ public class Shape implements Component {
         return edges;
     }
 
-    public ArrayList<Point> getVertexes() {
-        return vertexes;
+    public ArrayList<Point> getVertices() {
+        return vertices;
     }
 
     public void setRefractiveIndex(double refractiveIndex) {
@@ -107,7 +157,7 @@ public class Shape implements Component {
             return true;
         }
 
-        for (Point vertex : vertexes) {
+        for (Point vertex : vertices) {
             if (Point.distance(vertex, point) < 5) {
                 return true;
             }
@@ -208,7 +258,7 @@ public class Shape implements Component {
         stringBuilder.append("\tName: ").append(name).append("\n");
         stringBuilder.append("\tVisible: ").append(visible).append("\n");
         stringBuilder.append("\tRefractive Index: ").append(refractiveIndex).append("\n");
-        for (Point point : vertexes) {
+        for (Point point : vertices) {
             stringBuilder.append("\t").append(point.toData()).append("\n");
         }
         stringBuilder.append("}\n");

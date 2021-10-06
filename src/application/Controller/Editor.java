@@ -145,6 +145,8 @@ public class Editor {
     private final HashMap<Component, GridPane> componentGridPaneHashMap = new HashMap<>();
     private final HashMap<Component, Text> componentTextHashMap = new HashMap<>();
 
+    private final HashMap<String, StringProperty> keybindNamePropertyMap = new HashMap<>();
+
     private final StringProperty css = new SimpleStringProperty();
 
     private final Menu openRecent = new Menu();
@@ -182,19 +184,19 @@ public class Editor {
         mirror.setToggleGroup(group);
 
         try {
-            source.setGraphic(new ImageView(new Image(new FileInputStream("src/application/Resources/images/Source.png"),
+            source.setGraphic(new ImageView(new Image(new FileInputStream(System.getProperty("user.dir") + "/src/application/Resources/images/Source.png"),
                     COMPONENT_BUTTON_SIZE, COMPONENT_BUTTON_SIZE, false, false)));
-            absorber.setGraphic(new ImageView(new Image(new FileInputStream("src/application/Resources/images/Absorber.png"),
+            absorber.setGraphic(new ImageView(new Image(new FileInputStream(System.getProperty("user.dir") + "/src/application/Resources/images/Absorber.png"),
                     COMPONENT_BUTTON_SIZE, COMPONENT_BUTTON_SIZE, false, false)));
-            mirror.setGraphic(new ImageView(new Image(new FileInputStream("src/application/Resources/images/Mirror.png"),
+            mirror.setGraphic(new ImageView(new Image(new FileInputStream(System.getProperty("user.dir") + "/src/application/Resources/images/Mirror.png"),
                     COMPONENT_BUTTON_SIZE, COMPONENT_BUTTON_SIZE, false, false)));
-            shape.setGraphic(new ImageView(new Image(new FileInputStream("src/application/Resources/images/Shape.png"),
+            shape.setGraphic(new ImageView(new Image(new FileInputStream(System.getProperty("user.dir") + "/src/application/Resources/images/Shape.png"),
                     COMPONENT_BUTTON_SIZE, COMPONENT_BUTTON_SIZE, false, false)));
         } catch (FileNotFoundException ignored) {}
 
         // loading files
         try {
-            Scanner scanner = new Scanner(new File("src/application/Resources/recent_files.txt"));
+            Scanner scanner = new Scanner(new File(System.getProperty("user.dir") + "/src/application/Resources/recent_files.txt"));
             while (scanner.hasNextLine()) {
                 recentFiles.add(new File(scanner.nextLine()));
             }
@@ -222,35 +224,41 @@ public class Editor {
 
     private void initialiseMenuBar() {
         menuBar.getMenus().clear();
-        int fileWidth = 150;
+        int fileWidth = 180;
         Menu file = new Menu("File");
         menuBar.getMenus().add(file);
 
         MenuItem newFile = new MenuItem();
-        newFile.setGraphic(menuFormatting("New", "Ctrl+Shift+N", fileWidth));
+        keybindNamePropertyMap.put("newFile", new SimpleStringProperty());
+        newFile.setGraphic(menuFormatting("New", "newFile", fileWidth));
         newFile.setOnAction(e -> newFile());
         file.getItems().add(newFile);
 
         MenuItem save = new MenuItem();
-        save.setGraphic(menuFormatting("Save", "Ctrl+S", fileWidth));
+        keybindNamePropertyMap.put("save", new SimpleStringProperty());
+        save.setGraphic(menuFormatting("Save", "save", fileWidth));
         save.setOnAction(e -> save());
         file.getItems().add(save);
 
         MenuItem saveAs = new MenuItem();
-        saveAs.setGraphic(menuFormatting("Save As", "Ctrl+Shift+S", fileWidth));
+        keybindNamePropertyMap.put("saveAs", new SimpleStringProperty());
+        saveAs.setGraphic(menuFormatting("Save As", "saveAs", fileWidth));
         saveAs.setOnAction(e -> saveAs());
         file.getItems().add(1, saveAs);
 
         MenuItem open = new MenuItem();
-        open.setGraphic(menuFormatting("Open", "Ctrl+O", fileWidth));
+        keybindNamePropertyMap.put("open", new SimpleStringProperty());
+        open.setGraphic(menuFormatting("Open", "open", fileWidth));
         open.setOnAction(e -> open());
         file.getItems().add(open);
 
-        openRecent.setGraphic(menuFormatting("Open Recent", "", fileWidth));
+        keybindNamePropertyMap.put("openRecent", new SimpleStringProperty());
+        openRecent.setGraphic(menuFormatting("Open Recent", "openRecent", fileWidth));
         file.getItems().add(openRecent);
 
         MenuItem settings = new MenuItem();
-        settings.setGraphic(menuFormatting("Settings", "Ctrl+Alt+S", fileWidth));
+        keybindNamePropertyMap.put("settings", new SimpleStringProperty());
+        settings.setGraphic(menuFormatting("Settings", "settings", fileWidth));
         settings.setOnAction(e -> Main.showSettings());
         file.getItems().add(settings);
 
@@ -258,26 +266,40 @@ public class Editor {
         Menu help = new Menu("Help");
         menuBar.getMenus().add(help);
 
-        MenuItem showTutorial = new MenuItem("Show Tutorial");
+        MenuItem showTutorial = new MenuItem();
+        keybindNamePropertyMap.put("showTutorial", new SimpleStringProperty());
+        showTutorial.setGraphic(menuFormatting("Show Tutorial", "showTutorial", fileWidth));
         showTutorial.setOnAction(e -> showTutorial());
         help.getItems().add(showTutorial);
 
-        MenuItem closeTutorial = new MenuItem("Close Tutorial");
+        MenuItem closeTutorial = new MenuItem();
+        keybindNamePropertyMap.put("closeTutorial", new SimpleStringProperty());
+        closeTutorial.setGraphic(menuFormatting("Close Tutorial", "closeTutorial", fileWidth));
         closeTutorial.setOnAction(e -> closeTutorial());
         help.getItems().add(closeTutorial);
 
-        MenuItem about = new MenuItem("About");
+        MenuItem about = new MenuItem();
+        keybindNamePropertyMap.put("about", new SimpleStringProperty());
+        about.setGraphic(menuFormatting("About", "about", fileWidth));
         about.setOnAction(e -> Main.showAbout());
         help.getItems().add(about);
 
+        setMenuBarKeybinds();
         updateRecentFiles();
     }
 
-    private AnchorPane menuFormatting(String action, String shortcut, int width) {
+    void setMenuBarKeybinds() {
+        for (String propertyName: keybindNamePropertyMap.keySet()) {
+            keybindNamePropertyMap.get(propertyName).setValue(Main.KEYBIND_PROPERTIES.getProperty(propertyName));
+        }
+    }
+
+    private AnchorPane menuFormatting(String action, String propertyName, int width) {
         AnchorPane anchorPane = new AnchorPane();
         anchorPane.setPrefWidth(width);
         Label actionLabel = new Label(action);
-        Label shortcutLabel = new Label(shortcut);
+        Label shortcutLabel = new Label();
+        shortcutLabel.textProperty().bind(keybindNamePropertyMap.get(propertyName));
         anchorPane.getChildren().addAll(actionLabel, shortcutLabel);
 
         AnchorPane.setRightAnchor(shortcutLabel, 0.0);
@@ -367,7 +389,7 @@ public class Editor {
         }
 
         try {
-            FileWriter fileWriter = new FileWriter("src/application/Resources/recent_files.txt");
+            FileWriter fileWriter = new FileWriter(System.getProperty("user.dir") + "/src/application/Resources/recent_files.txt");
             for (File recentFile: recentFiles) {
                 fileWriter.append(recentFile.getAbsolutePath()).append("\n");
             }
@@ -456,10 +478,10 @@ public class Editor {
 
     private void initializeTutorial() {
         try {
-            String left = Files.readString(Paths.get(new File("src/application/Resources/information/left_panel_information.txt").toURI()));
-            String center = Files.readString(Paths.get(new File("src/application/Resources/information/center_panel_information.txt").toURI()));
-            String right = Files.readString(Paths.get(new File("src/application/Resources/information/right_panel_information.txt").toURI()));
-            String bottom = Files.readString(Paths.get(new File("src/application/Resources/information/bottom_panel_information.txt").toURI()));
+            String left = Files.readString(Paths.get(new File(System.getProperty("user.dir") + "/src/application/Resources/tutorial_information/left.txt").toURI()));
+            String center = Files.readString(Paths.get(new File(System.getProperty("user.dir") + "/src/application/Resources/tutorial_information/center.txt").toURI()));
+            String right = Files.readString(Paths.get(new File(System.getProperty("user.dir") + "/src/application/Resources/tutorial_information/right.txt").toURI()));
+            String bottom = Files.readString(Paths.get(new File(System.getProperty("user.dir") + "/src/application/Resources/tutorial_information/bottom.txt").toURI()));
 
             leftRegion.setOnMouseClicked(e -> Main.showDialog(CustomDialog.DialogType.INFO, left));
             centerRegion.setOnMouseClicked(e -> Main.showDialog(CustomDialog.DialogType.INFO, center));
@@ -471,7 +493,8 @@ public class Editor {
     private void showTutorial() {
         if (!showingTutorial) {
             try {
-                String tutorialInfo = Files.readString(Paths.get(new File("src/application/Resources/information/tutorial_information.txt").toURI()));
+                String tutorialInfo = Files.readString(Paths.get(new File(
+                        "src/application/Resources/tutorial_information/initial.txt").toURI()));
                 Main.showDialog(CustomDialog.DialogType.INFO, tutorialInfo);
             } catch (IOException ignored) {}
 
@@ -536,7 +559,7 @@ public class Editor {
 
         gridPane.setPrefWidth(0);
         ColumnConstraints col1 = new ColumnConstraints();
-        col1.setPercentWidth(85);
+        col1.setPercentWidth(80);
         gridPane.getColumnConstraints().add(col1);
 
         gridPaneComponentHashMap.put(gridPane, component);
@@ -798,53 +821,29 @@ public class Editor {
 
     private void initialiseKeyboardShortcuts() {
         borderPane.setOnKeyPressed(e -> {
-            switch (e.getCode()) {
-                case S -> {
-                    if (e.isControlDown()) {
-                        if (e.isShiftDown()) {
-                            saveAs();
-                        } else if (e.isAltDown()) {
-                            Main.showSettings();
-                        } else {
-                            save();
-                        }
-                    }
+            String keyString = Settings.keyEventToString(e);
+            if (!keyString.equals("")) {
+                if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("newFile"))) newFile();
+                else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("save"))) save();
+                else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("saveAs"))) saveAs();
+                else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("open"))) open();
+                else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("openRecent"))) openRecent();
+                else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("settings"))) Main.showSettings();
+                else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("about"))) Main.showAbout();
+                else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("showTutorial"))) showTutorial();
+                else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("closeTutorial"))) closeTutorial();
+                else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("addSource"))) source.setSelected(true);
+                else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("addMirror"))) mirror.setSelected(true);
+                else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("addAbsorber"))) absorber.setSelected(true);
+                else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("addShape"))) shape.setSelected(true);
+                else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("addPoint"))) addPointToShape();
+                else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("undo"))) undo();
+                else if (keyString.equals(Main.KEYBIND_PROPERTIES.getProperty("redo"))) redo();
+            } else {
+                switch (e.getCode()) {
+                    case SHIFT -> scrollPane.setPannable(true);
+                    case DELETE -> delete();
                 }
-                case O -> {
-                    if (e.isControlDown()) {
-                        open();
-                    }
-                }
-                case N -> {
-                    if (e.isControlDown()) {
-                        newFile();
-                    }
-                }
-                case Z -> {
-                    if (e.isControlDown() && components.size() > 0) {
-                        removeComponent(components.get(components.size() - 1));
-                    }
-                }
-                case Y -> {
-                    if (e.isControlDown() && removedComponents.size() > 0) {
-                        addComponent(removedComponents.remove(removedComponents.size() - 1));
-                    }
-                }
-                case DELETE -> {
-                    if (selectedComponent != null) {
-                        removeComponent(selectedComponent);
-                        selectedComponent = null;
-
-                        sourceListView.getSelectionModel().clearSelection();
-                        mirrorListView.getSelectionModel().clearSelection();
-                        absorberListView.getSelectionModel().clearSelection();
-                        shapeListView.getSelectionModel().clearSelection();
-
-                        rotatable = false;
-                        rotating = false;
-                    }
-                }
-                case SHIFT -> scrollPane.setPannable(true);
             }
         });
 
@@ -853,6 +852,37 @@ public class Editor {
                 scrollPane.setPannable(false);
             }
         });
+    }
+
+    private void openRecent() {
+        openRecent.show();
+    }
+
+    private void undo() {
+        if (components.size() > 0) {
+            removeComponent(components.get(components.size() - 1));
+        }
+    }
+
+    private void redo() {
+        if (removedComponents.size() > 0) {
+            addComponent(removedComponents.remove(removedComponents.size() - 1));
+        }
+    }
+
+    private void delete() {
+        if (selectedComponent != null) {
+            removeComponent(selectedComponent);
+            selectedComponent = null;
+
+            sourceListView.getSelectionModel().clearSelection();
+            mirrorListView.getSelectionModel().clearSelection();
+            absorberListView.getSelectionModel().clearSelection();
+            shapeListView.getSelectionModel().clearSelection();
+
+            rotatable = false;
+            rotating = false;
+        }
     }
 
     /*
@@ -892,7 +922,7 @@ public class Editor {
             } else if (shape.isSelected()) {
                 selectedPoint = null;
                 Point selectedPoint = new Point(e.getX(), e.getY());
-                if (vertices.size() != 0 && selectedPoint.equals(vertices.get(0), 5)) {
+                if (vertices.size() >= 3 && selectedPoint.equals(vertices.get(0), 5)) {
                     selectedComponent = new Shape(1.5, vertices);
                     addComponent(selectedComponent);
                     vertices.clear();
@@ -905,7 +935,7 @@ public class Editor {
 
                 rotatable = false;
                 rotating = false;
-            // selecting components and making them modifiable
+                // selecting components and making them modifiable
             } else {
                 selectedPoint = findClickedPoint(e);
 
@@ -929,7 +959,7 @@ public class Editor {
                             rotating = true;
                             componentsModified = true;
                         }
-                    // user needs to not have selected a point in order to rotate something
+                        // user needs to not have selected a point in order to rotate something
                     } else {
                         rotatable = false;
                         rotating = false;
@@ -1012,6 +1042,35 @@ public class Editor {
         });
 
         canvas.setOnMouseReleased(e -> rotating = false);
+    }
+
+    @FXML
+    private void addPointToShape() {
+        if (selectedComponent instanceof Shape shape) {
+            shape.addPoint();
+            componentsModified = true;
+            updateCanvas();
+        } else {
+            Main.showDialog(CustomDialog.DialogType.ERROR, "Selected component is not a shape! Cannot add a point to selected component");
+        }
+    }
+
+    @FXML
+    private void deleteSelectedPoint() {
+        if (selectedComponent instanceof Shape shape) {
+            if (selectedPoint != null) {
+                if (shape.getVertices().size() > 3) {
+                    shape.removePoint(selectedPoint);
+                    selectedPoint = null;
+                    componentsModified = true;
+                    updateCanvas();
+                } else {
+                    Main.showDialog(CustomDialog.DialogType.ERROR, "Cannot remove point if shape has less than 4 points!");
+                }
+            } else {
+                Main.showDialog(CustomDialog.DialogType.ERROR, "Cannot remove point if no point is selected!");
+            }
+        }
     }
 
     // finding the clicked or hovered component
@@ -1104,7 +1163,7 @@ public class Editor {
         Component clickedComponent = findMousedComponent(e);
         Point clickedPoint = new Point(e.getX(), e.getY());
         if (clickedComponent instanceof Shape shape) {
-            for (Point point: shape.getVertexes()) {
+            for (Point point: shape.getVertices()) {
                 if (Point.distance(point, clickedPoint) < MAX_DISTANCE_SELECT) {
                     shapeLayoutX.setDisable(false);
                     shapeLayoutY.setDisable(false);
@@ -1161,7 +1220,7 @@ public class Editor {
     }
 
     void drawCanvas() {
-        graphicsContext.setFill(Color.web(Main.PROPERTIES.getProperty("canvasColor")));
+        graphicsContext.setFill(Color.web(Main.COLOR_PROPERTIES.getProperty("canvasColor")));
         graphicsContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
         for (Component component: visibleComponents) {  // draw components
@@ -1185,19 +1244,19 @@ public class Editor {
 
             // setting the color of the component to be drawn
             if (component == selectedComponent) {
-                graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("selectedColor")));
+                graphicsContext.setStroke(Color.web(Main.COLOR_PROPERTIES.getProperty("selectedColor")));
             } else if (component == hoveredComponent) {
-                graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("hoveredColor")));
+                graphicsContext.setStroke(Color.web(Main.COLOR_PROPERTIES.getProperty("hoveredColor")));
             } else {
                 if (component instanceof Shape) {
-                    graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("shapeColor")));
+                    graphicsContext.setStroke(Color.web(Main.COLOR_PROPERTIES.getProperty("shapeColor")));
                 } else if (component instanceof Source source) {
                     graphicsContext.setStroke(source.getBeam().getColor());
                 } else if (component instanceof LineComponent lineComponent) {
                     if (lineComponent.getEdge().getType() == Edge.EdgeType.ABSORBER) {
-                        graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("absorberColor")));
+                        graphicsContext.setStroke(Color.web(Main.COLOR_PROPERTIES.getProperty("absorberColor")));
                     } else if (lineComponent.getEdge().getType() == Edge.EdgeType.REFLECTOR) {
-                        graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("mirrorColor")));
+                        graphicsContext.setStroke(Color.web(Main.COLOR_PROPERTIES.getProperty("mirrorColor")));
                     }
                 }
             }
@@ -1224,7 +1283,7 @@ public class Editor {
 
         // drawing the rotate-wheel if the selected component is a source or a line component
         if (rotatable) {
-            graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("shapeColor")));
+            graphicsContext.setStroke(Color.web(Main.COLOR_PROPERTIES.getProperty("shapeColor")));
             graphicsContext.beginPath();
 
             Point point;
@@ -1252,19 +1311,19 @@ public class Editor {
         graphicsContext.beginPath();
         Point newPoint = new Point(e.getX(), e.getY());
         if (absorber.isSelected() && startPoint != null) {
-            graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("absorberColor")));
+            graphicsContext.setStroke(Color.web(Main.COLOR_PROPERTIES.getProperty("absorberColor")));
 
             if (!startPoint.equals(newPoint)) {
                 drawSegment(new Segment(startPoint, newPoint));
             }
         } else if (mirror.isSelected() && startPoint != null) {
-            graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("mirrorColor")));
+            graphicsContext.setStroke(Color.web(Main.COLOR_PROPERTIES.getProperty("mirrorColor")));
 
             if (!startPoint.equals(newPoint)) {
                 drawSegment(new Segment(startPoint, newPoint));
             }
         } else if (shape.isSelected() && vertices.size() != 0) {
-            graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("drawingColor")));
+            graphicsContext.setStroke(Color.web(Main.COLOR_PROPERTIES.getProperty("drawingColor")));
 
             ArrayList<Point> points = new ArrayList<>(vertices);
             boolean contains = false;

@@ -114,6 +114,20 @@ LEFT PANEL
     -fx-padding: 0 -1 -1 -1;
 }
 
+.list-view .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 12px;
+}
+
+.list-view .scroll-bar:vertical .thumb {
+    -fx-background-color: -accent-color;
+    -fx-background-radius: 6px;
+}
+
+.list-view .scroll-bar:vertical .increment-button, .list-view .scroll-bar:vertical .decrement-button, .list-view .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+}
+
 .list-cell:selected {
     -fx-background-color: -background-selected-color;
 }
@@ -178,6 +192,16 @@ RIGHT PANEL
 
 .color-picker {
     -fx-background-color: -highlight-color;
+}
+
+.mfx-button {
+    -fx-border-radius: 0;
+    -fx-background-radius: 0;
+    -fx-background-color: -button-color;
+}
+
+.mfx-button:hover {
+    -fx-background-color: -selected-button-color;
 }
 
 .color-picker > .arrow-button .arrow {

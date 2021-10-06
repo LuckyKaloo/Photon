@@ -30,7 +30,7 @@
          <Insets left="-1.0" right="-1.0" />
       </padding>
       <ImageView fitHeight="19.0" fitWidth="19.0" pickOnBounds="true" preserveRatio="true" GridPane.rowIndex="1">
-         <Image url="file:/E:/Luc/Computer%20science/Java/School/Project/src/application/Resources/images/logo_small.png" />
+         <Image url="@../Resources/images/logo_small.png" />
       </ImageView>
       <HBox prefHeight="25.0" prefWidth="168.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
          <Button maxHeight="24.0" maxWidth="45.0" minHeight="24.0" minWidth="45.0" mnemonicParsing="false" onMouseClicked="#exit" prefHeight="24.0" prefWidth="45.0" styleClass="cross" />

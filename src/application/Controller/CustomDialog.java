@@ -46,7 +46,7 @@ public class CustomDialog implements Initializable {
         });
 
         try {
-            Image image = new Image(new FileInputStream("src/application/Resources/images/" + fileName));
+            Image image = new Image(new FileInputStream( "src/application/Resources/images/" + fileName));
             imageView.setImage(image);
         } catch (FileNotFoundException ignored) {}
     }

@@ -1,13 +1,9 @@
 package application.Controller;
 
-import io.github.palexdev.materialfx.controls.MFXDialog;
-import io.github.palexdev.materialfx.controls.MFXStageDialog;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -29,7 +25,8 @@ public class Main extends Application {
     private static About about;
     private static CustomDialog dialog;
 
-    public final static Properties PROPERTIES = new Properties();
+    public final static Properties COLOR_PROPERTIES = new Properties();
+    public final static Properties KEYBIND_PROPERTIES = new Properties();
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -61,7 +58,7 @@ public class Main extends Application {
 
         Main.editorStage = stage;
         stage.setTitle("Photon");
-        stage.getIcons().add(new Image(new FileInputStream("src/application/Resources/images/logo.png")));
+        stage.getIcons().add(new Image(new FileInputStream(System.getProperty("user.dir") + "/src/application/Resources/images/logo.png")));
         stage.initStyle(StageStyle.TRANSPARENT);
 
         // showing the splash screen
@@ -73,7 +70,8 @@ public class Main extends Application {
 
     private static void loadProperties() {
         try {
-            PROPERTIES.load(new FileInputStream("src/application/Resources/settings/color_settings.properties"));
+            COLOR_PROPERTIES.load(new FileInputStream(System.getProperty("user.dir") + "/src/application/Resources/settings/colors.properties"));
+            KEYBIND_PROPERTIES.load(new FileInputStream(System.getProperty("user.dir") + "/src/application/Resources/settings/keybinds.properties"));
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -81,8 +79,12 @@ public class Main extends Application {
 
     public static void writeProperties() {
         try {
-            FileWriter fileWriter = new FileWriter("src/application/Resources/settings/color_settings.properties");
-            Main.PROPERTIES.store(fileWriter, "");
+            FileWriter fileWriter = new FileWriter(System.getProperty("user.dir") + "/src/application/Resources/settings/colors.properties");
+            Main.COLOR_PROPERTIES.store(fileWriter, "");
+            fileWriter.close();
+
+            fileWriter = new FileWriter(System.getProperty("user.dir") + "/src/application/Resources/settings/keybinds.properties");
+            Main.KEYBIND_PROPERTIES.store(fileWriter, "");
             fileWriter.close();
 
             writeToCss();
@@ -92,16 +94,16 @@ public class Main extends Application {
     }
 
     public static void writeToCss() {
-        String string = "-title-color: " + PROPERTIES.getProperty("titleColor") + ";\n" +
-            "-background-color: " + PROPERTIES.getProperty("backgroundColor") + ";\n" +
-            "-text-color: " + PROPERTIES.getProperty("textColor") + ";\n" +
-            "-background-selected-color: " + PROPERTIES.getProperty("backgroundSelectedColor") + ";\n" +
-            "-button-color: " + PROPERTIES.getProperty("unselectedButtonColor") + ";\n" +
-            "-disabled-color: " + PROPERTIES.getProperty("disabledColor") + ";\n" +
-            "-selected-button-color: " + PROPERTIES.getProperty("selectedButtonColor") + ";\n" +
-            "-highlight-color: " + PROPERTIES.getProperty("highlightColor") + ";\n" +
-            "-separator-color: " + PROPERTIES.getProperty("separatorColor") + ";\n" +
-            "-accent-color: " + PROPERTIES.getProperty("accentColor") + ";";
+        String string = "-title-color: " + COLOR_PROPERTIES.getProperty("titleColor") + ";\n" +
+            "-background-color: " + COLOR_PROPERTIES.getProperty("backgroundColor") + ";\n" +
+            "-text-color: " + COLOR_PROPERTIES.getProperty("textColor") + ";\n" +
+            "-background-selected-color: " + COLOR_PROPERTIES.getProperty("backgroundSelectedColor") + ";\n" +
+            "-button-color: " + COLOR_PROPERTIES.getProperty("unselectedButtonColor") + ";\n" +
+            "-disabled-color: " + COLOR_PROPERTIES.getProperty("disabledColor") + ";\n" +
+            "-selected-button-color: " + COLOR_PROPERTIES.getProperty("selectedButtonColor") + ";\n" +
+            "-highlight-color: " + COLOR_PROPERTIES.getProperty("highlightColor") + ";\n" +
+            "-separator-color: " + COLOR_PROPERTIES.getProperty("separatorColor") + ";\n" +
+            "-accent-color: " + COLOR_PROPERTIES.getProperty("accentColor") + ";";
 
         if (editor != null) {
             editor.setCss(string);
@@ -110,8 +112,6 @@ public class Main extends Application {
         about.setCss(string);
         dialog.setCss(string);
     }
-
-    public static void showOptions() {}
 
     public static void showEditor() {
         SplashScreen.finish();
@@ -130,6 +130,10 @@ public class Main extends Application {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    public static void resetMenuBar() {
+        editor.setMenuBarKeybinds();
     }
 
     public static void minimizeEditor() {
@@ -159,15 +163,6 @@ public class Main extends Application {
     public static void exitAbout() {
         aboutStage.close();
     }
-
-//    public static void showDialog(MFXStageDialog dialog) {
-//        dialog.setOwner(dialogStage);
-//        dialog.setModality(Modality.APPLICATION_MODAL);
-//        dialog.setScrimBackground(true);
-//        dialog.setAnimate(false);
-//        dialog.setCenterInOwner(true);
-//        dialog.show();
-//    }
 
     public static void showDialog(CustomDialog.DialogType type, String text) {
         dialog.setType(type);

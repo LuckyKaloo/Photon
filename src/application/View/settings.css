@@ -70,6 +70,12 @@
     -fx-background-color: -selected-button-color;
 }
 
+.mfx-label {
+    -mfx-unfocused-line-color: -highlight-color;
+    -mfx-line-color: -accent-color;
+    -mfx-text-fill: -text-color;
+}
+
 .tree-view {
     -fx-background-color: -background-color;
     -fx-border-color: -background-color -separator-color -background-color -background-color;

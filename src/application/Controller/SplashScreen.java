@@ -105,7 +105,7 @@ public class SplashScreen {
         // adding the text to say the name of the program
         Text text = new Text("Photon");
         try {
-            text.setFont(Font.loadFont(new FileInputStream("src/application/Resources/VarelaRound-Regular.ttf"), FONT_SIZE));
+            text.setFont(Font.loadFont(new FileInputStream(System.getProperty("user.dir") + "/src/application/Resources/VarelaRound-Regular.ttf"), FONT_SIZE));
             text.setFill(TEXT_COLOR);
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();

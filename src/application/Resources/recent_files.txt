@@ -1,6 +1,2 @@
-E:\Luc\Computer science\Java\School\Photon\funny.phn
-E:\Luc\Computer science\Java\School\Photon\hgfh.phn
-E:\Luc\Computer science\Java\School\Photon\testing.phn
-E:\Luc\Computer science\Java\School\Photon\Infinity.phn
-E:\Luc\Computer science\Java\School\Photon\Not Infinity.phn
-E:\Luc\Computer science\Java\School\Photon\panning.phn
+E:\Luc\Computer science\Java\School\Photon\demo.phn
+C:\Users\kaloo\AppData\Roaming\Microsoft\Windows\Network Shortcuts\testing.phn
