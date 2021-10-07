@@ -1,2 +1,4 @@
 E:\Luc\Computer science\Java\School\Photon\demo.phn
 C:\Users\kaloo\AppData\Roaming\Microsoft\Windows\Network Shortcuts\testing.phn
+C:\Users\kaloo\AppData\Roaming\Microsoft\Windows\Network Shortcuts\demo.phn
+C:\Users\kaloo\AppData\Roaming\Microsoft\Windows\Network Shortcuts\demonstration.phn

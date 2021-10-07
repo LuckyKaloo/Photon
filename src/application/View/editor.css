@@ -225,6 +225,59 @@ RIGHT PANEL
     -fx-rotate: 0;
 }
 
+.mfx-slider .thumb {
+    -mfx-color: -accent-color !important;
+}
+
+.mfx-slider .thumb-radius {
+    -mfx-color: transparent !important;
+}
+
+.mfx-slider .mfx-ripple-generator {
+    -mfx-ripple-color: transparent !important;
+}
+
+.mfx-slider .label {
+    -fx-background-color: -highlight-color !important;
+    -fx-background-radius: 5px !important;
+    -fx-text-fill: -text-color;
+}
+
+.mfx-slider .track {
+    -fx-fill: -highlight-color !important;
+}
+
+.mfx-slider .bar {
+    -fx-fill: -accent-color !important;
+}
+
+.mfx-checkbox {
+    -mfx-fill: -highlight-color !important;
+    -mfx-checked-color: -accent-color !important;
+    -mfx-unchecked-color: -highlight-color !important;
+}
+
+.mfx-checkbox .ripple-container .box .mfx-font-icon {
+    -mfx-color: -background-color !important;
+}
+
+.mfx-checkbox .ripple-container .mfx-ripple-generator {
+    -mfx-ripple-color: transparent;
+}
+
+.mfx-label {
+    -mfx-line-color: -accent-color;
+    -mfx-unfocused-line-color: -highlight-color;
+    -mfx-line-stroke-width: 2px;
+    -mfx-text-fill: -text-color;
+}
+
+.mfx-label:disabled {
+    -mfx-line-color: -disabled-color;
+    -mfx-unfocused-line-color: -disabled-color;
+}
+
+
 
 /*
 TUTORIAL

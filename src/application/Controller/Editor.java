@@ -7,6 +7,10 @@ import application.Model.Geometry.Segment;
 import application.Model.Light.LightComponent;
 import application.Model.Light.LightRay;
 import application.Model.Light.LightSegment;
+import application.Model.Light.Normal;
+import io.github.palexdev.materialfx.controls.MFXCheckbox;
+import io.github.palexdev.materialfx.controls.MFXLabel;
+import io.github.palexdev.materialfx.controls.MFXSlider;
 import io.github.palexdev.materialfx.controls.MFXTextField;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -33,6 +37,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -119,6 +124,14 @@ public class Editor {
     private StackPane rightPanel;
     @FXML
     private StackPane bottomPanel;
+    @FXML
+    private MFXSlider maximumInteractions;
+    @FXML
+    private MFXCheckbox showNormals;
+    @FXML
+    private MFXLabel angleIncidence;
+    @FXML
+    private MFXLabel angleRefraction;
 
     // non FXML stuff
     private GraphicsContext graphicsContext;
@@ -126,6 +139,11 @@ public class Editor {
     private final ArrayList<Component> visibleComponents = new ArrayList<>();
     private final ArrayList<Component> removedComponents = new ArrayList<>();
     private boolean componentsModified = false;  // whether a component has been modified -> if has been modified then need to recalculate the beam
+
+    private boolean stateSaved = false;
+    private final LinkedList<String> pastStates = new LinkedList<>();
+    private final LinkedList<String> futureStates = new LinkedList<>();
+    private final HashMap<MFXTextField, Boolean> textFieldModified = new HashMap<>();
 
     private Point startPoint;  // if user selected mirror or absorber, this is the first point of the component (line)
     private final ArrayList<Point> vertices = new ArrayList<>();  // if user selected shape, more than 1 point will be used
@@ -145,6 +163,8 @@ public class Editor {
 
     private Component copiedComponent;
 
+    private Normal hoveredNormal;
+
     private final ArrayList<File> recentFiles = new ArrayList<>();
     private File currentFile; // the current file that the user has opened
 
@@ -160,7 +180,6 @@ public class Editor {
     private boolean showingTutorial = false;
 
     private final static int MAX_DISTANCE_SELECT = 6;
-    private final static int NORMAL_WIDTH = 5;
     private final static double ROTATE_WHEEL_WIDTH = 50;
 
     private final static int COMPONENT_BUTTON_SIZE = 60;
@@ -216,7 +235,7 @@ public class Editor {
         initialiseKeyboardShortcuts();
         initialiseCanvasActions();
         initialiseMenuBar();
-        initializeInformationPanel();
+        initialiseInformationPanel();
         initializeTutorial();
 
         componentsModified = true;
@@ -225,6 +244,92 @@ public class Editor {
 
     public void setCss(String css) {
         this.css.setValue(css);
+    }
+
+    private String stateToData() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Canvas {\n\tWidth: ").append(canvas.getWidth())
+                .append("\n\tHeight: ").append(canvas.getHeight()).append("\n}\n");
+        for (Component component: components) {
+            stringBuilder.append(component.toData());
+        }
+        return stringBuilder.toString();
+    }
+
+    private void loadData(String data) {
+        selectedComponent = null;
+        selectedPoint = null;
+
+        removedComponents.clear();
+        visibleComponents.clear();
+        components.clear();
+        sourceListView.getItems().clear();
+        mirrorListView.getItems().clear();
+        absorberListView.getItems().clear();
+        shapeListView.getItems().clear();
+
+        Pattern pattern = Pattern.compile(".*\\{([^}]|\\n)*}");
+        Matcher matcher = pattern.matcher(data);
+
+        while (matcher.find()) {
+            try {
+                String line = matcher.group().replaceAll("[ \\t\\r\\f]", "");
+                String[] lines = line.split("\n");
+                if (lines[0].equals("Canvas{")) {
+                    if (!Pattern.matches("Width:.*", lines[1]) || !Pattern.matches("Height:.*", lines[2])) {
+                        throw new IllegalArgumentException("Data for canvas is not valid!");
+                    }
+
+                    try {
+                        canvas.setWidth(Double.parseDouble(lines[1].substring(6)));
+                        canvas.setHeight(Double.parseDouble(lines[2].substring(7)));
+                    } catch (NumberFormatException ex) {
+                        Alert alert = new Alert(Alert.AlertType.ERROR, "Data for canvas is not valid!");
+                        alert.show();
+                    }
+                } else {
+                    addComponent(Component.parseData(matcher.group()), false);
+                }
+            } catch (IllegalArgumentException ex) {
+                Main.showDialog(CustomDialog.DialogType.ERROR, ex.getMessage());
+            }
+        }
+    }
+
+    private void saveAsPastState() {
+        saveAsPastState(true);
+    }
+
+    private void saveAsPastState(boolean overwriteFutureStates) {
+        if (overwriteFutureStates) {
+            futureStates.clear();
+        }
+
+        pastStates.add(stateToData());
+        if (pastStates.size() > 50) {
+            pastStates.removeFirst();
+        }
+    }
+
+    private void loadPastState() {
+        if (pastStates.size() != 0) {
+            saveAsFutureState();
+            loadData(pastStates.removeLast());
+        }
+    }
+
+    private void saveAsFutureState() {
+        futureStates.add(stateToData());
+        if (futureStates.size() > 50) {
+            futureStates.removeFirst();
+        }
+    }
+
+    private void loadFutureState() {
+        if (futureStates.size() != 0) {
+            saveAsPastState(false);
+            loadData(futureStates.removeLast());
+        }
     }
 
     /*
@@ -338,11 +443,7 @@ public class Editor {
     private void saveFile(File file) {
         try {
             FileWriter fileWriter = new FileWriter(file);
-            fileWriter.append("Canvas {\n\tWidth: ").append(String.valueOf(canvas.getWidth()))
-                    .append("\n\tHeight: ").append(String.valueOf(canvas.getHeight())).append("\n}\n");
-            for (Component component: components) {
-                fileWriter.append(component.toData());
-            }
+            fileWriter.write(stateToData());
             fileWriter.close();
 
             addRecentFile(file);
@@ -360,6 +461,7 @@ public class Editor {
         }
 
         componentsModified = true;
+        saveAsPastState();
     }
 
     private void addRecentFile(File file) {
@@ -392,43 +494,9 @@ public class Editor {
     private void openFile(File file) {
         currentFile = file;
 
-        removedComponents.clear();
-        visibleComponents.clear();
-        components.clear();
-        sourceListView.getItems().clear();
-        mirrorListView.getItems().clear();
-        absorberListView.getItems().clear();
-        shapeListView.getItems().clear();
-
         try {
             String data = Files.readString(Paths.get(file.toURI()));
-            Pattern pattern = Pattern.compile(".*\\{([^}]|\\n)*}");
-            Matcher matcher = pattern.matcher(data);
-
-            while (matcher.find()) {
-                try {
-                    String line = matcher.group().replaceAll("[ \\t\\r\\f]", "");
-                    String[] lines = line.split("\n");
-                    if (lines[0].equals("Canvas{")) {
-                        if (!Pattern.matches("Width:.*", lines[1]) || !Pattern.matches("Height:.*", lines[2])) {
-                            throw new IllegalArgumentException("Data for canvas is not valid!");
-                        }
-
-                        try {
-                            canvas.setWidth(Double.parseDouble(lines[1].substring(6)));
-                            canvas.setHeight(Double.parseDouble(lines[2].substring(7)));
-                        } catch (NumberFormatException ex) {
-                            Alert alert = new Alert(Alert.AlertType.ERROR, "Data for canvas is not valid!");
-                            alert.show();
-                        }
-                    } else {
-                        addComponent(Component.parseData(matcher.group()));
-                    }
-                } catch (IllegalArgumentException ex) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR, ex.getMessage());
-                    alert.show();
-                }
-            }
+            loadData(data);
         } catch (NoSuchFileException ex) {
             Main.showDialog(CustomDialog.DialogType.ERROR, "File cannot be found: " + file.getAbsolutePath());
         } catch (IOException ex) {
@@ -510,7 +578,11 @@ public class Editor {
     COMPONENT PANEL
      */
 
-    private void addComponent(Component component) {
+    private void addComponent(Component component, boolean addState) {
+        if (addState) {
+            saveAsPastState();
+        }
+
         components.add(component);
         visibleComponents.add(component);
 
@@ -522,6 +594,7 @@ public class Editor {
         ToggleButton toggleButton = new ToggleButton();
         toggleButton.getStyleClass().add("visibility-button");
         toggleButton.selectedProperty().addListener((c, o, o1) -> {
+            saveAsPastState();
             component.setVisibility(!o1);
 
             if (o1) {
@@ -578,7 +651,13 @@ public class Editor {
         updateCanvas();
     }
 
+    private void addComponent(Component component) {
+        addComponent(component, true);
+    }
+
     private void removeComponent(Component component) {
+        saveAsPastState();
+
         components.remove(component);
         removedComponents.add(component);
         if (component.getVisibility()) {
@@ -652,9 +731,23 @@ public class Editor {
             sourceRotation.setText(String.format("%.2f", source.getBeam().getInitialRay().getAngle()));
             sourceColorPicker.setValue(source.getBeam().getColor());
         }
+
+        maximumInteractions.setValue(Double.parseDouble(Main.SETTINGS_PROPERTIES.getProperty("maximumInteractions")));
+
+        if (hoveredNormal != null && showNormals.isSelected()) {
+            angleIncidence.setText(String.format("%.1f", hoveredNormal.getAngleIncidence()));
+            angleRefraction.setText(String.format("%.1f", hoveredNormal.getAngleRefraction()));
+            angleIncidence.setDisable(false);
+            angleRefraction.setDisable(false);
+        } else {
+            angleIncidence.setText("");
+            angleRefraction.setText("");
+            angleIncidence.setDisable(true);
+            angleRefraction.setDisable(true);
+        }
     }
 
-    private void initializeInformationPanel() {
+    private void initialiseInformationPanel() {
         // setting properties of numeral fields
         setNumberFieldProperties(shapeLayoutX, i -> {
             if (selectedComponent instanceof Shape shape) {
@@ -721,6 +814,7 @@ public class Editor {
         // this is a color picker, not a text field so cannot use setTextFieldProperties
         sourceColorPicker.setOnAction(e -> {
             if (selectedComponent instanceof Source source) {
+                saveAsPastState();
                 source.getBeam().setColor(sourceColorPicker.getValue());
 
                 componentsModified = true;
@@ -736,46 +830,54 @@ public class Editor {
         setListViewProperties(shapeListView);
 
         // setting the properties of the name fields
-        nameTextField.focusedProperty().addListener((c, o, o1) -> {
-            if (!o1) {
-                if (selectedComponent != null) {
-                    selectedComponent.setName(nameTextField.getText());
-                    componentTextHashMap.get(selectedComponent).setText(nameTextField.getText());
-                }
-
-                componentsModified = true;
-                updateCanvas();
+        setTextFieldProperties(nameTextField, i -> {
+            if (selectedComponent != null) {
+                selectedComponent.setName(nameTextField.getText());
+                componentTextHashMap.get(selectedComponent).setText(nameTextField.getText());
             }
         });
 
-        nameTextField.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) {
-                if (selectedComponent != null) {
-                    selectedComponent.setName(nameTextField.getText());
-                    componentTextHashMap.get(selectedComponent).setText(nameTextField.getText());
-                }
+        showNormals.setOnMouseClicked(e -> updateCanvas());
 
-                componentsModified = true;
-                updateCanvas();
-            }
+        maximumInteractions.valueProperty().addListener((c, o, o1) -> {
+            Main.SETTINGS_PROPERTIES.setProperty("maximumInteractions", String.valueOf(o1.intValue()));
+            Main.writeSettingsProperties();
         });
     }
 
     // this function sets the properties for a text field based off a general function as most of them are similar
     private void setNumberFieldProperties(MFXTextField textField, Consumer<Integer> function) {
+        textFieldModified.put(textField, false);
+
         textField.textProperty().addListener((c, o, o1) -> {
             if (!Pattern.matches("\\d*\\.?\\d*", o1)) {
                 textField.setText(o);
+            } else {
+                textFieldModified.replace(textField, true);
             }
         });
 
-        setTextFieldProperties(textField, function);
+        setFieldProperties(textField, function);
     }
 
-    private void setTextFieldProperties(TextField textField, Consumer<Integer> function) {
+    private void setTextFieldProperties(MFXTextField textField, Consumer<Integer> function) {
+        textFieldModified.put(textField, false);
+
+        textField.textProperty().addListener((c, o, o1) -> textFieldModified.replace(textField, true));
+
+        setFieldProperties(textField, function);
+    }
+
+    private void setFieldProperties(MFXTextField textField, Consumer<Integer> function) {
         textField.focusedProperty().addListener((c, o, o1) -> {
             if (!o1) {
-                function.accept(0);
+                if (textFieldModified.get(textField)) {
+                    saveAsPastState();
+                    textFieldModified.replace(textField, false);
+                }
+                try {
+                    function.accept(0);
+                } catch (Exception ignored) {}
 
                 componentsModified = true;
                 updateCanvas();
@@ -784,6 +886,10 @@ public class Editor {
 
         textField.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) {
+                if (textFieldModified.get(textField)) {
+                    saveAsPastState();
+                    textFieldModified.replace(textField, false);
+                }
                 function.accept(0);
 
                 componentsModified = true;
@@ -802,6 +908,7 @@ public class Editor {
             updateCanvas();
         });
     }
+
 
     /*
     KEYBOARD SHORTCUTS
@@ -850,15 +957,11 @@ public class Editor {
     }
 
     private void undo() {
-        if (components.size() > 0) {
-            removeComponent(components.get(components.size() - 1));
-        }
+        loadPastState();
     }
 
     private void redo() {
-        if (removedComponents.size() > 0) {
-            addComponent(removedComponents.remove(removedComponents.size() - 1));
-        }
+        loadFutureState();
     }
 
     private void delete() {
@@ -1010,8 +1113,10 @@ public class Editor {
 
         canvas.setOnMouseMoved(e -> {
             hoveredComponent = findMousedComponent(e);
+            hoveredNormal = findHoveredNormal(e);
             updateCanvas(e);
         });
+
 
         /*
         mouse dragged can either:
@@ -1020,6 +1125,11 @@ public class Editor {
         3. translate a component
          */
         canvas.setOnMouseDragged(e -> {
+            if ((selectedPoint != null || rotating || translating) && !stateSaved) {
+                saveAsPastState();
+                stateSaved = true;
+            }
+
             if (selectedPoint != null) {
                 selectedPoint.setX(e.getX());
                 selectedPoint.setY(e.getY());
@@ -1049,6 +1159,7 @@ public class Editor {
         });
 
         canvas.setOnMouseReleased(e -> {
+            stateSaved = false;
             rotating = false;
             translating = false;
 
@@ -1061,6 +1172,7 @@ public class Editor {
     @FXML
     private void addPointToShape() {
         if (selectedComponent instanceof Shape shape) {
+            saveAsPastState();
             shape.addPoint();
             componentsModified = true;
             updateCanvas();
@@ -1074,6 +1186,7 @@ public class Editor {
         if (selectedComponent instanceof Shape shape) {
             if (selectedPoint != null) {
                 if (shape.getVertices().size() > 3) {
+                    saveAsPastState();
                     shape.removePoint(selectedPoint);
                     selectedPoint = null;
                     componentsModified = true;
@@ -1097,6 +1210,7 @@ public class Editor {
 
     private void paste() {
         if (copiedComponent != null) {
+            saveAsPastState();
             selectedComponent = copiedComponent.translate(new Point(10, -10));
             copiedComponent = selectedComponent.copy();
             addComponent(selectedComponent);
@@ -1108,6 +1222,21 @@ public class Editor {
     private void duplicate() {
         copy();
         paste();
+    }
+
+    private Normal findHoveredNormal(MouseEvent e) {
+        Point hoveredPoint = new Point(e.getX(), e.getY());
+        for (Component component: components) {
+            if (component instanceof Source source) {
+                for (Normal normal: source.getBeam().getNormals()) {
+                    if (normal.getNormal().containsPoint(hoveredPoint, MAX_DISTANCE_SELECT)) {
+                        return normal;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     // finding the clicked or hovered component
@@ -1301,21 +1430,22 @@ public class Editor {
             graphicsContext.stroke();
             graphicsContext.closePath();
 
-            // drawing the normals if the component is a source
-//            if (component instanceof Source source) {
-//                graphicsContext.setStroke(Color.web(Main.PROPERTIES.getProperty("shapeColor")));
-//                graphicsContext.setLineDashes(2);
-//                for (LightComponent lightComponent: source.getBeam().getLightComponents()) {
-//                    Normal normal = lightComponent.getNormal();
-//                    if (normal != null) {
-//                        graphicsContext.beginPath();
-//                        drawNormal(normal.edge(), normal.intersection());
-//                        graphicsContext.stroke();
-//                    }
-//                }
-//                graphicsContext.closePath();
-//                graphicsContext.setLineDashes(0);
-//            }
+            // drawing the normals if the component is a source and the user wants to draw them
+            if (showNormals.isSelected()) {
+                if (component instanceof Source source) {
+                    graphicsContext.setStroke(Color.web(Main.COLOR_PROPERTIES.getProperty("shapeColor")));
+                    graphicsContext.setLineDashes(2);
+
+                    for (Normal normal: source.getBeam().getNormals()) {
+                        graphicsContext.beginPath();
+                        drawNormal(normal);
+                        graphicsContext.stroke();
+                    }
+
+                    graphicsContext.closePath();
+                    graphicsContext.setLineDashes(0);
+                }
+            }
         }
 
         // drawing the rotate-wheel if the selected component is a source or a line component
@@ -1396,15 +1526,8 @@ public class Editor {
         graphicsContext.lineTo(endX, endY);
     }
 
-    private void drawNormal(Segment edge, Point intersection) {
-        // the coordinates of the start and end points of the normal displayed
-        double startX = intersection.getX() + NORMAL_WIDTH * Math.cos(Math.toRadians(edge.getAngle() + 90));
-        double startY = intersection.getY() + NORMAL_WIDTH * Math.sin(Math.toRadians(edge.getAngle() + 90));
-        double endX = intersection.getX() - NORMAL_WIDTH * Math.cos(Math.toRadians(edge.getAngle() + 90));
-        double endY = intersection.getY() - NORMAL_WIDTH * Math.sin(Math.toRadians(edge.getAngle() + 90));
-
-        // drawing a dashed line to represent the normal
-        graphicsContext.moveTo(startX, startY);
-        graphicsContext.lineTo(endX, endY);
+    private void drawNormal(Normal normal) {
+        graphicsContext.moveTo(normal.getNormal().getStart().getX(),  normal.getNormal().getStart().getY());
+        graphicsContext.lineTo(normal.getNormal().getEnd().getX(), normal.getNormal().getEnd().getY());
     }
 }

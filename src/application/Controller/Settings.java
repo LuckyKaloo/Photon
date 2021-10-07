@@ -8,7 +8,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
@@ -17,7 +16,6 @@ import javafx.scene.paint.Color;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
@@ -273,7 +271,7 @@ public class Settings implements Initializable {
 
 
         Main.resetMenuBar();
-        Main.writeProperties();
+        Main.writeAppliedProperties();
         Main.updateEditor();
     }
 

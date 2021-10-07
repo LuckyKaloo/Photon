@@ -1,5 +1,6 @@
 package application.Model.Light;
 
+import application.Controller.Main;
 import application.Model.Components.Component;
 import application.Model.Geometry.Point;
 import application.Model.Geometry.Ray;
@@ -41,11 +42,12 @@ public class Beam {
     }
 
     public void generateBeam(ArrayList<Component> components) {
+        normals.clear();
         lightComponents.clear();
 
-        // only goes to 1000 to prevent the program from crashing if there are infinite loops
+        // only goes to a maximum amount to prevent the program from crashing if there are infinite loops
         // e.g. mirror parallel to a mirror which is perpendicular to a source between them -> infinite reflections
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < Integer.parseInt((String) Main.SETTINGS_PROPERTIES.get("maximumInteractions")); i++) {
             ArrayList<Point> intersections = new ArrayList<>();
             ArrayList<Integer> componentIndexes = new ArrayList<>();
             LightRay endRay;
@@ -90,12 +92,19 @@ public class Beam {
                 LightSegment lightSegment = new LightSegment(endRay, intersections.get(index));
                 lightComponents.add(lightSegment);
                 lightComponents.add(newRay);
+
+                if (newRay != null) {
+                    normals.add(newRay.getNormal());
+                }
             }
         }
 
         lightComponents.remove(lightComponents.size()-1);
     }
 
+    public ArrayList<Normal> getNormals() {
+        return normals;
+    }
 
     @Override
     public String toString() {

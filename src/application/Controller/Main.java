@@ -25,6 +25,7 @@ public class Main extends Application {
     private static About about;
     private static CustomDialog dialog;
 
+    public final static Properties SETTINGS_PROPERTIES = new Properties();
     public final static Properties COLOR_PROPERTIES = new Properties();
     public final static Properties KEYBIND_PROPERTIES = new Properties();
 
@@ -70,6 +71,7 @@ public class Main extends Application {
 
     private static void loadProperties() {
         try {
+            SETTINGS_PROPERTIES.load(new FileInputStream(System.getProperty("user.dir") + "/src/application/Resources/settings/settings.properties"));
             COLOR_PROPERTIES.load(new FileInputStream(System.getProperty("user.dir") + "/src/application/Resources/settings/colors.properties"));
             KEYBIND_PROPERTIES.load(new FileInputStream(System.getProperty("user.dir") + "/src/application/Resources/settings/keybinds.properties"));
         } catch (IOException ex) {
@@ -77,7 +79,7 @@ public class Main extends Application {
         }
     }
 
-    public static void writeProperties() {
+    public static void writeAppliedProperties() {
         try {
             FileWriter fileWriter = new FileWriter(System.getProperty("user.dir") + "/src/application/Resources/settings/colors.properties");
             Main.COLOR_PROPERTIES.store(fileWriter, "");
@@ -90,6 +92,16 @@ public class Main extends Application {
             writeToCss();
         } catch (IOException ex) {
             ex.printStackTrace();
+        }
+    }
+
+    public static void writeSettingsProperties() {
+        try {
+            FileWriter fileWriter = new FileWriter(System.getProperty("user.dir") + "/src/application/Resources/settings/settings.properties");
+            Main.SETTINGS_PROPERTIES.store(fileWriter, "");
+            fileWriter.close();
+        } catch (IOException e ) {
+            e.printStackTrace();
         }
     }
 

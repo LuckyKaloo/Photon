@@ -61,7 +61,7 @@ public class SplashScreen {
 
     private final static Timeline[] CONTRACT_TIMELINES = new Timeline[NUM_PETALS];
 
-    private final static Duration TIMED_DURATION = Duration.millis(1);
+    private final static Duration TIMED_DURATION = Duration.millis(3000);
 
 
     public static Scene generateScene() {
