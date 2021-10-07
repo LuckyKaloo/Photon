@@ -137,7 +137,6 @@ public class Editor {
     private GraphicsContext graphicsContext;
     private final ArrayList<Component> components = new ArrayList<>();
     private final ArrayList<Component> visibleComponents = new ArrayList<>();
-    private final ArrayList<Component> removedComponents = new ArrayList<>();
     private boolean componentsModified = false;  // whether a component has been modified -> if has been modified then need to recalculate the beam
 
     private boolean stateSaved = false;
@@ -260,7 +259,6 @@ public class Editor {
         selectedComponent = null;
         selectedPoint = null;
 
-        removedComponents.clear();
         visibleComponents.clear();
         components.clear();
         sourceListView.getItems().clear();
@@ -404,7 +402,6 @@ public class Editor {
         currentFile = null;
         fileName.setText("");
         components.clear();
-        removedComponents.clear();
         visibleComponents.clear();
         selectedComponent = null;
         selectedPoint = null;
@@ -644,7 +641,6 @@ public class Editor {
         }
 
         // updating the state of the canvas
-        removedComponents.clear();
         rotatable = false;
         rotating = false;
         componentsModified = true;
@@ -659,7 +655,6 @@ public class Editor {
         saveAsPastState();
 
         components.remove(component);
-        removedComponents.add(component);
         if (component.getVisibility()) {
             visibleComponents.remove(component);
 
