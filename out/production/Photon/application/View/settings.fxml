@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import io.github.palexdev.materialfx.controls.MFXButton?>
+<?import io.github.palexdev.materialfx.controls.MFXLabel?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ColorPicker?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane fx:id="borderPane" prefHeight="513.0" prefWidth="760.0" stylesheets="@settings.css" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Controller.Settings">
+   <top>
+      <GridPane prefHeight="25.0" prefWidth="760.0" styleClass="menu-bar" BorderPane.alignment="CENTER">
+         <columnConstraints>
+            <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="46.0" minWidth="30.0" prefWidth="42.0" />
+            <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="682.0" minWidth="10.0" prefWidth="675.0" />
+            <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="45.0" minWidth="45.0" prefWidth="45.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints />
+            <RowConstraints minHeight="10.0" valignment="CENTER" vgrow="SOMETIMES" />
+         </rowConstraints>
+         <opaqueInsets>
+            <Insets />
+         </opaqueInsets>
+         <padding>
+            <Insets left="-1.0" right="-1.0" />
+         </padding>
+         <ImageView fitHeight="19.0" fitWidth="19.0" pickOnBounds="true" preserveRatio="true" GridPane.rowIndex="1">
+            <Image url="@../Resources/images/logo_small.png" />
+         </ImageView>
+         <HBox prefHeight="25.0" prefWidth="168.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+            <Button maxHeight="24.0" maxWidth="45.0" minHeight="24.0" minWidth="45.0" mnemonicParsing="false" onMouseClicked="#exit" prefHeight="24.0" prefWidth="45.0" styleClass="cross" />
+         </HBox>
+         <Label text="Settings" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+      </GridPane>
+   </top>
+   <center>
+      <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="main-container" BorderPane.alignment="CENTER">
+         <AnchorPane fx:id="themeColors" pickOnBounds="false" prefHeight="488.0" prefWidth="540.0" visible="false">
+            <GridPane layoutX="14.0" layoutY="10.0" prefHeight="400.0" prefWidth="512.0">
+               <columnConstraints>
+                  <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+               </rowConstraints>
+               <Label prefHeight="17.0" prefWidth="268.0" text="Title Color" />
+               <ColorPicker fx:id="titleColorPicker" GridPane.columnIndex="1" />
+               <Label prefHeight="17.0" prefWidth="199.0" text="Background Color" GridPane.rowIndex="1" />
+               <Label text="Text Color" GridPane.rowIndex="3" />
+               <Label prefHeight="17.0" prefWidth="148.0" text="Background Selected Color" GridPane.rowIndex="2" />
+               <Label text="Unselected Button Color" GridPane.rowIndex="4" />
+               <Label text="Selected Button Color" GridPane.rowIndex="5" />
+               <Label text="Highlight Color" GridPane.rowIndex="6" />
+               <Label text="Separator Color" GridPane.rowIndex="7" />
+               <Label text="Accent Color" GridPane.rowIndex="9" />
+               <ColorPicker fx:id="backgroundColorPicker" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+               <ColorPicker fx:id="backgroundSelectedColorPicker" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+               <ColorPicker fx:id="textColorPicker" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+               <ColorPicker fx:id="unselectedButtonColorPicker" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+               <ColorPicker fx:id="selectedButtonColorPicker" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+               <ColorPicker fx:id="highlightColorPicker" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+               <ColorPicker fx:id="separatorColorPicker" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+               <ColorPicker fx:id="accentColorPicker" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+               <Label text="Disabled Color" GridPane.rowIndex="8" />
+               <ColorPicker fx:id="disabledColorPicker" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+            </GridPane>
+         </AnchorPane>
+         <MFXButton layoutX="459.0" layoutY="445.0" onMouseClicked="#apply" prefHeight="29.0" prefWidth="67.0" text="APPLY">
+            <font>
+               <Font name="System Bold" size="13.0" />
+            </font>
+         </MFXButton>
+         <AnchorPane fx:id="editorColors" pickOnBounds="false" prefHeight="488.0" prefWidth="540.0" visible="false">
+            <GridPane layoutX="14.0" layoutY="10.0" prefHeight="280.0" prefWidth="512.0">
+               <columnConstraints>
+                  <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+               </rowConstraints>
+               <Label prefHeight="17.0" prefWidth="268.0" text="Background Color" />
+               <ColorPicker fx:id="canvasColorPicker" GridPane.columnIndex="1" />
+               <Label prefHeight="17.0" prefWidth="199.0" text="Mirror Color" GridPane.rowIndex="1" />
+               <Label text="Shape Color" GridPane.rowIndex="3" />
+               <Label prefHeight="17.0" prefWidth="148.0" text="Absorber Color" GridPane.rowIndex="2" />
+               <Label text="Drawing Color" GridPane.rowIndex="4" />
+               <Label text="Selected Color" GridPane.rowIndex="5" />
+               <Label text="Hovered Color" GridPane.rowIndex="6" />
+               <ColorPicker fx:id="mirrorColorPicker" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+               <ColorPicker fx:id="absorberColorPicker" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+               <ColorPicker fx:id="shapeColorPicker" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+               <ColorPicker fx:id="drawingColorPicker" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+               <ColorPicker fx:id="selectedColorPicker" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+               <ColorPicker fx:id="hoveredColorPicker" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+            </GridPane>
+         </AnchorPane>
+         <Hyperlink layoutX="14.0" layoutY="448.0" onMouseClicked="#resetSettings" text="Reset Settings" />
+         <AnchorPane fx:id="canvasKeyBinds" pickOnBounds="false" prefHeight="488.0" prefWidth="540.0" visible="false">
+            <GridPane layoutX="14.0" layoutY="10.0" prefHeight="400.0" prefWidth="512.0">
+               <columnConstraints>
+                  <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+               </rowConstraints>
+               <Label prefHeight="17.0" prefWidth="268.0" text="Add Source" />
+               <Label prefHeight="17.0" prefWidth="199.0" text="Add Mirror" GridPane.rowIndex="1" />
+               <Label text="Add Shape" GridPane.rowIndex="3" />
+               <Label prefHeight="17.0" prefWidth="148.0" text="Add Absorber" GridPane.rowIndex="2" />
+               <Label text="Add Point to Shape" GridPane.rowIndex="4" />
+               <Label text="Undo" GridPane.rowIndex="5" />
+               <Label text="Redo" GridPane.rowIndex="6" />
+               <MFXLabel fx:id="addSource" onKeyPressed="#setKeyBind" prefHeight="27.0" prefWidth="160.0" GridPane.columnIndex="1" />
+               <MFXLabel fx:id="addMirror" onKeyPressed="#setKeyBind" prefHeight="27.0" prefWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+               <MFXLabel fx:id="addAbsorber" onKeyPressed="#setKeyBind" prefHeight="27.0" prefWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+               <MFXLabel fx:id="addShape" onKeyPressed="#setKeyBind" prefHeight="27.0" prefWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+               <MFXLabel fx:id="addPoint" onKeyPressed="#setKeyBind" prefHeight="27.0" prefWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+               <MFXLabel fx:id="undo" onKeyPressed="#setKeyBind" prefHeight="27.0" prefWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+               <MFXLabel fx:id="redo" onKeyPressed="#setKeyBind" prefHeight="27.0" prefWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+               <Label text="Copy" GridPane.rowIndex="7" />
+               <Label text="Paste" GridPane.rowIndex="8" />
+               <Label text="Duplicate" GridPane.rowIndex="9" />
+               <MFXLabel fx:id="duplicate" layoutX="362.0" layoutY="257.0" onKeyPressed="#setKeyBind" prefHeight="27.0" prefWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+               <MFXLabel fx:id="paste" layoutX="10.0" layoutY="17.0" onKeyPressed="#setKeyBind" prefHeight="27.0" prefWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+               <MFXLabel fx:id="copy" layoutX="10.0" layoutY="17.0" onKeyPressed="#setKeyBind" prefHeight="27.0" prefWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+            </GridPane>
+         </AnchorPane>
+         <AnchorPane fx:id="editorKeyBinds" pickOnBounds="false" prefHeight="488.0" prefWidth="540.0" visible="false">
+            <GridPane layoutX="14.0" layoutY="10.0" prefHeight="360.0" prefWidth="512.0">
+               <columnConstraints>
+                  <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+               </rowConstraints>
+               <Label prefHeight="17.0" prefWidth="268.0" text="New" />
+               <Label prefHeight="17.0" prefWidth="199.0" text="Save" GridPane.rowIndex="1" />
+               <Label text="Open" GridPane.rowIndex="3" />
+               <Label prefHeight="17.0" prefWidth="148.0" text="Save As" GridPane.rowIndex="2" />
+               <Label text="Open Recent" GridPane.rowIndex="4" />
+               <Label text="Settings" GridPane.rowIndex="5" />
+               <Label text="About" GridPane.rowIndex="6" />
+               <MFXLabel fx:id="newFile" onKeyPressed="#setKeyBind" prefHeight="27.0" prefWidth="160.0" GridPane.columnIndex="1" />
+               <MFXLabel fx:id="save" onKeyPressed="#setKeyBind" prefHeight="27.0" prefWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+               <MFXLabel fx:id="saveAs" onKeyPressed="#setKeyBind" prefHeight="27.0" prefWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+               <MFXLabel fx:id="open" onKeyPressed="#setKeyBind" prefHeight="27.0" prefWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+               <MFXLabel fx:id="openRecent" onKeyPressed="#setKeyBind" prefHeight="27.0" prefWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+               <MFXLabel fx:id="settings" onKeyPressed="#setKeyBind" prefHeight="27.0" prefWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+               <MFXLabel fx:id="about" onKeyPressed="#setKeyBind" prefHeight="27.0" prefWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+               <Label text="Show Tutorial" GridPane.rowIndex="7" />
+               <Label text="Close Tutorial" GridPane.rowIndex="8" />
+               <MFXLabel fx:id="showTutorial" onKeyPressed="#setKeyBind" prefHeight="27.0" prefWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+               <MFXLabel fx:id="closeTutorial" onKeyPressed="#setKeyBind" prefHeight="27.0" prefWidth="160.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+            </GridPane>
+         </AnchorPane>
+      </AnchorPane>
+   </center>
+   <left>
+      <TreeView fx:id="treeView" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+   </left>
+</BorderPane>

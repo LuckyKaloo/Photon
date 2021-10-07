@@ -1,0 +1,1 @@
+The center panel contains the canvas, which can be dragged by pressing shift and dragging your mouse. The canvas contains all components, which can be selected by clicking on them, or deselected by clicking on an empty portion of the canvas.

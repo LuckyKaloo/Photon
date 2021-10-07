@@ -1,0 +1,1 @@
+The right panel allows you to modify components once they have been selected, and different options are available for different types of components. The name of a component can also be inputted here.
